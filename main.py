@@ -189,8 +189,183 @@ def vaccinations():
     downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv', "vaccination.csv")
     vaccinationsCSV = open("vaccination.csv", "r")
 
-    
+    vaccinationsCSV.readline()  # Skip first line
+
+    # Open file for writing
+    if path.exists("DailyDoses.txt"):
+        dailyDoses = open("DailyDoses.txt", "w")
+    else:  # Create file if it doesn't exist
+        dailyDoses = open("DailyDoses.txt", "x")
+
+    # Open file for writing
+    if path.exists("TotalDoses.txt"):
+        totalDoses = open("TotalDoses.txt", "w")
+    else:  # Create file if it doesn't exist
+        totalDoses = open("TotalDoses.txt", "x")
+
+    # Open file for writing
+    if path.exists("PercentageVaccinated.txt"):
+        percentage = open("PercentageVaccinated.txt", "w")
+    else:  # Create file if it doesn't exist
+        percentage = open("PercentageVaccinated.txt", "x")
+
+    dailyDoses.writelines(["=== Daily doses ===\n",
+                            "{{Graph:Chart\n",
+                           "| height =\n",
+                            "|width=800\n",
+                            "| xAxisTitle=Date (YYYY-MM)\n",
+                            "| xType = date\n",
+                            "| xAxisAngle=-40\n",
+                            "| xAxisFormat=%Y-%m\n",
+                            "| yGrid= 1\n",
+                            "| xGrid= 1\n",
+                            "| colors= #72B8B1, #196165, #929292,\n",
+                            "| legend=Legend\n",
+                            "| y1Title=1st dose\n",
+                            "| y2Title=2nd dose\n",
+                            "| y3Title= Total\n",
+                            "| yAxisTitle = Number of doses\n",
+                           "| x="
+                           ])
+
+    totalDoses.writelines(["=== Total doses ===\n",
+                           "{{Graph:Chart\n",
+                           "| height =\n",
+                           "|width=800\n",
+                           "| xAxisTitle=Date (YYYY-MM)\n",
+                           "| xType = date\n",
+                           "| xAxisAngle=-40\n",
+                           "| xAxisFormat=%Y-%m\n",
+                           "| yGrid= 1\n",
+                           "| xGrid= 1\n",
+                           "| colors= #72B8B1, #196165, #929292\n",
+                           "| legend=Legend\n",
+                           "| y1Title=1st dose\n",
+                           "| y2Title=2nd dose\n",
+                           "| y3Title= Total\n",
+                           "| yAxisTitle = Cumulative number of doses\n",
+                           "| x="
+                           ])
+    percentage.writelines(["=== Percentage of the population vaccinated ===\n",
+                           "{{Graph:Chart\n",
+                           "| height =\n",
+                           "|width=800\n",
+                           "| xAxisTitle=Date (YYYY-MM)\n",
+                           "| xType = date\n",
+                           "| xAxisAngle=-40\n",
+                           "| xAxisFormat=%Y-%m\n",
+                           "| yGrid= 1\n",
+                           "| xGrid= 1\n",
+                           "| colors= #72B8B1, #196165, #929292\n",
+                           "| legend=Legend\n",
+                           "| y1Title=1st dose\n",
+                           "| y2Title=2nd dose\n",
+                           "| yAxisTitle =  Percentage of the population vaccinated (%)\n",
+                           "| x="
+                           ])
+
+    date = []
+
+    dailyDoses1st = []
+    dailyDoses2nd = []
+    dailyDosesTotal = []
+
+    totalDoses1st = []
+    totalDoses2nd = []
+    totalDosesTotal = []
+
+    percentage1st = []
+    percentage2nd = []
+
+    # Parse file
+    for x in vaccinationsCSV:
+        line = re.split(',', x)
+        if (not line[0]) or (len(line) <= 1):
+            break
+
+        # Gather data and add to arrays
+        if line[2] == 'RSS99':
+            date.append(line[0])  # Add dates into array
+
+            dailyDoses1st.append(line[4])
+            dailyDoses2nd.append(line[5])
+            dailyDosesTotal.append(line[8])
+
+            totalDoses1st.append(line[6])
+            totalDoses2nd.append(line[7])
+            totalDosesTotal.append(line[9])
+
+            percentage1st.append(line[10])
+            percentage2nd.append(line[11])
+
+    dailyDoses = open("DailyDoses.txt", "a")
+
+    for x in date:
+        dailyDoses.write(x + ",")
+
+    dailyDoses.writelines(["\n|y1="])
+    for x in dailyDoses1st:
+        dailyDoses.write(str(x) + ",")
+
+    dailyDoses.writelines(["\n|y2="])
+    for x in dailyDoses2nd:
+        dailyDoses.write(str(x) + ",")
+
+    dailyDoses.writelines(["\n|y3="])
+    for x in dailyDosesTotal:
+        dailyDoses.write(str(x) + ",")
+
+    dailyDoses.writelines(["\n}}\n",
+                           "<div style=\"font-size:80%; line-height:1.2em;\">",
+                           "\n* Source: [https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv CSV file] on the [https://www.inspq.qc.ca/covid-19/donnees/vaccination INSPQ] website.</div>"])
+    dailyDoses.close()
+
+    totalDoses = open("TotalDoses.txt", "a")
+
+    for x in date:
+        totalDoses.write(x + ",")
+
+    totalDoses.writelines(["\n|y1="])
+
+    for x in totalDoses1st:
+        totalDoses.write(str(x) + ",")
+
+    totalDoses.writelines(["\n|y2="])
+
+    for x in totalDoses2nd:
+        totalDoses.write(str(x) + ",")
+
+    totalDoses.writelines(["\n|y3="])
+
+    for x in totalDosesTotal:
+        totalDoses.write(str(x) + ",")
+
+    totalDoses.writelines(["\n}}\n",
+                           "<div style=\"font-size:80%; line-height:1.2em;\">",
+                          "\n* Source: [https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv CSV file] on the [https://www.inspq.qc.ca/covid-19/donnees/vaccination INSPQ] website.</div>"])
+    totalDoses.close()
+
+    percentage = open("PercentageVaccinated.txt", "a")
+
+    for x in date:
+        percentage.write(x + ",")
+
+    percentage.writelines(["\n|y1="])
+    for x in percentage1st:
+        percentage.write(str(x) + ",")
+
+    percentage.writelines(["\n|y2="])
+    for x in percentage2nd:
+        percentage.write(str(x) + ",")
+
+    percentage.writelines(["\n}}\n",
+                           "<div style=\"font-size:80%; line-height:1.2em;\">",
+                          "\n* Source: [https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv CSV file] on the [https://www.inspq.qc.ca/covid-19/donnees/vaccination INSPQ] website.</div>"])
+    percentage.close()
+
+
 
 # Generate all files
 montreal()
 quebec()
+vaccinations()
