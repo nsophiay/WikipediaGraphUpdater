@@ -14,7 +14,7 @@ Currently in the works / actuellement en cours :
 4. Choose whichever text file you want and press CTRL+A to select the entire file / choisir le bon fichier et appuyer sur le CTRL+A afin de selectionner le fichier entier.
 5. Copy and paste the selection into the source editor in Wikipedia / copier et coller la selection dans l'éditeur de code de Wikipedia.
 
-## DESCRIPTIONS OF TEXT FILES
+## DESCRIPTIONS OF TEXT FILES / DESCRIPTIONS DES FICHIERS .TXT
 
 ### DailyDoses.txt
 
