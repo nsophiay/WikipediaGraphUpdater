@@ -10,7 +10,7 @@ Currently in the works:
 
 1. Download main.exe.
 2. Double-click to run it.
-3. Six text files should be generated, as well as three CSVs.
+3. Six text files should be generated in the directory in which you downloaded main.exe, as well as three CSVs.
 4. Choose whichever text file you want and press CTRL+A to select the entire file.
 5. Copy and paste the selection into the source editor in Wikipedia.
 
