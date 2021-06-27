@@ -8,7 +8,7 @@ Currently in the works / actuellement en cours :
 
 ## HOW TO RUN / EXECUTER LE PROGRAMME
 
-1. Download main.exe / télécharger main-FR.exe.
+1. [Download main.exe](https://github.com/nsophiay/WikipediaGraphUpdater/raw/main/main.exe) / [télécharger main-FR.exe](https://github.com/nsophiay/WikipediaGraphUpdater/raw/main/main-FR.exe).
 2. Double-click to run it / double-cliquer sur le fichier afin de l'exécuter.
 3. Six text files should be generated in the directory in which you downloaded main.exe, as well as three CSVs / six fichiers .txt seront génerés dans le dossier dans lequel vous avez téléchargé main-FR.exe.
 4. Choose whichever text file you want and press CTRL+A to select the entire file / choisir le bon fichier et appuyer sur le CTRL+A afin de selectionner le fichier entier.
