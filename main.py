@@ -185,6 +185,11 @@ def quebec():
     quebecDeaths.writelines(["\n}}\n", "</div>"])
     quebecDeaths.close()
 
+def vaccinations():
+    downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv', "vaccination.csv")
+    vaccinationsCSV = open("vaccination.csv", "r")
+
+    
 
 # Generate all files
 montreal()
