@@ -2,8 +2,6 @@ This Python program generates text files for the graphs on the following Wikiped
 * https://en.wikipedia.org/wiki/COVID-19_vaccination_in_Quebec
 * https://en.wikipedia.org/wiki/COVID-19_pandemic_in_Montreal
 * https://en.wikipedia.org/wiki/COVID-19_pandemic_in_Quebec
-
-Currently in the works / actuellement en cours :
 * https://en.wikipedia.org/wiki/COVID-19_pandemic_in_Canada
 
 ## HOW TO RUN / EXECUTER LE PROGRAMME
