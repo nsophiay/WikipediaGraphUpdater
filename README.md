@@ -14,6 +14,10 @@ This Python program generates text files for the graphs on the following Wikiped
 
 ## DESCRIPTIONS OF TEXT FILES / DESCRIPTIONS DES FICHIERS .TXT
 
+### CanadaCases.txt
+
+This file contains the updated graphs showing the 7-day moving averages of daily new cases in each region of Canada / ce fichier contient les graphiques qui montrent les moyennes mobiles de nouveaux cas quotidiens dans chaque région du Canada.
+
 ### DailyDoses.txt
 
 This file contains the updated graph showing daily vaccinations in Quebec, including the first, second, and total number of doses / ce fichier contient le graphique qui montre les vaccinations quotidiens au Québec, dont la prémière, deuxième, et totale nombre de doses.
