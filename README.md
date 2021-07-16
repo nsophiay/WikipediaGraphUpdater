@@ -2,8 +2,6 @@ This Python program generates text files for the graphs on the following Wikiped
 * https://en.wikipedia.org/wiki/COVID-19_vaccination_in_Quebec
 * https://en.wikipedia.org/wiki/COVID-19_pandemic_in_Montreal
 * https://en.wikipedia.org/wiki/COVID-19_pandemic_in_Quebec
-
-Currently in the works / actuellement en cours :
 * https://en.wikipedia.org/wiki/COVID-19_pandemic_in_Canada
 
 ## HOW TO RUN / EXECUTER LE PROGRAMME
@@ -15,6 +13,10 @@ Currently in the works / actuellement en cours :
 5. Copy and paste the selection into the source editor in Wikipedia / copier et coller la selection dans l'éditeur de code de Wikipedia.
 
 ## DESCRIPTIONS OF TEXT FILES / DESCRIPTIONS DES FICHIERS .TXT
+
+### CanadaCases.txt
+
+This file contains the updated graphs showing the 7-day moving averages of daily new cases in each region of Canada / ce fichier contient les graphiques qui montrent les moyennes mobiles de nouveaux cas quotidiens dans chaque région du Canada.
 
 ### DailyDoses.txt
 
