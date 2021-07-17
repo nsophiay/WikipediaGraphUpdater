@@ -6,10 +6,15 @@ from datetime import date
 todaysDate = date.today()
 todaysDate = todaysDate.strftime("%Y-%m-%d")
 
+closingStatement = "\n}}\n<div style=\"font-size:80%; line-height:1.2em;\">\n* Source: [" \
+                   "https://www.inspq.qc.ca/sites/default/files/covid/donnees/covid19-hist.csv Fichier CSV] sur le " \
+                   "site de l'[https://www.inspq.qc.ca/covid-19/donnees INSPQ] récupéré en date du " \
+                   ""+todaysDate+".</div> "
 
-# For the 7-day moving average computation
-def computeAverage(lst):
-    return sum(lst) / len(lst)
+closingStatementVacc = "\n}}\n<div style=\"font-size:80%; line-height:1.2em;\">\n* Source: [" \
+                   "https://inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv?prout=1626376027 Fichier CSV] sur le " \
+                   "site de l'[https://www.inspq.qc.ca/covid-19/donnees/vaccination INSPQ] récupéré en date du " \
+                   ""+todaysDate+".</div> "
 
 
 def downloadCSV(url, fileName):
@@ -151,11 +156,7 @@ def montreal():
     for x in dailyCases:
         montrealDailyCases.write(str(x) + ",")
 
-    montrealDailyCases.writelines(["\n}}\n",
-                                   "<div style=\"font-size:80%; line-height:1.2em;\">",
-                                   "\n* Source: [https://www.inspq.qc.ca/sites/default/files/covid/donnees/covid19-hist.csv Fichier CSV] sur le site de l'[https://www.inspq.qc.ca/covid-19/donnees INSPQ] récupéré en date du ",
-                                   todaysDate,
-                                   ".</div>"])
+    montrealDailyCases.writelines(closingStatement)
     montrealDailyCases.close()
 
     montrealTotalCases = open("CasTotauxMontreal.txt", "a")
@@ -187,11 +188,7 @@ def montreal():
     for x in dailyDeathsCHSLD:
         montrealDailyDeaths.write(str(x) + ",")
 
-    montrealDailyDeaths.writelines(["\n}}\n",
-                                   "<div style=\"font-size:80%; line-height:1.2em;\">",
-                                   "\n* Source: [https://www.inspq.qc.ca/sites/default/files/covid/donnees/covid19-hist.csv Fichier CSV] sur le site de l'[https://www.inspq.qc.ca/covid-19/donnees INSPQ] récupéré en date du ",
-                                   todaysDate,
-                                   ".</div>"])
+    montrealDailyDeaths.writelines(closingStatement)
     montrealDailyDeaths.close()
 
     montrealTotalDeaths = open("DecesTotauxMontreal.txt", "a")
@@ -207,11 +204,7 @@ def montreal():
     for x in totalDeathsCHSLD:
         montrealTotalDeaths.write(str(x) + ",")
 
-    montrealTotalDeaths.writelines(["\n}}\n",
-                                   "<div style=\"font-size:80%; line-height:1.2em;\">",
-                                   "\n* Source: [https://www.inspq.qc.ca/sites/default/files/covid/donnees/covid19-hist.csv Fichier CSV] sur le site de l'[https://www.inspq.qc.ca/covid-19/donnees INSPQ] récupéré en date du ",
-                                   todaysDate,
-                                   ".</div>"])
+    montrealTotalDeaths.writelines(closingStatement)
     montrealTotalDeaths.close()
 
 
@@ -222,53 +215,99 @@ def quebec():
     quebecCasesCSV.readline()  # Skip first line
 
     # Open file for writing
-    if path.exists("QuebecNewCases.txt"):
-        quebecCases = open("QuebecNewCases.txt", "w")
+    if path.exists("CasQuotidiensQuebec.txt"):
+        quebecCases = open("CasQuotidiensQuebec.txt", "w")
     else:  # Create file if it doesn't exist
-        quebecCases = open("QuebecNewCases.txt", "x")
+        quebecCases = open("CasQuotidiensQuebec.txt", "x")
+
+    if path.exists("CasTotauxQuebec.txt"):
+        quebecTotalCases = open("CasTotauxQuebec.txt", "w")
+    else:  # Create file if it doesn't exist
+        quebecTotalCases = open("CasTotauxQuebec.txt", "x")
 
     # Open file for writing
-    if path.exists("QuebecNewDeaths.txt"):
-        quebecDeaths = open("QuebecNewDeaths.txt", "w")
+    if path.exists("DecesQuotidiensQuebec.txt"):
+        quebecDeaths = open("DecesQuotidiensQuebec.txt", "w")
     else:  # Create file if it doesn't exist
-        quebecDeaths = open("QuebecNewDeaths.txt", "x")
+        quebecDeaths = open("DecesQuotidiensQuebec.txt", "x")
 
-    quebecCases.writelines(["=== Quebec new cases per day ===\n",
-                            "<div style=\"overflow-x:auto;>\n",
+    # Open file for writing
+    if path.exists("DecesTotauxQuebec.txt"):
+        quebecTotalDeaths = open("DecesTotauxQuebec.txt", "w")
+    else:  # Create file if it doesn't exist
+        quebecTotalDeaths = open("DecesTotauxQuebec.txt", "x")
+
+    quebecCases.writelines(["=== Cas quotidiens ===\n",
                             "{{Graph:Chart\n",
-                            "|width=950\n",
-                            "|colors=#ffc1b5, #FF6347\n",
-                            "|showValues= offset:2\n",
-                            "|type=line\n",
-                            "|xAxisTitle=Date\n",
-                            "|xAxisFormat=%B %Y\n",
-                            "|xAxisAngle=-40\n",
-                            "|yAxisTitle=No. of new cases\n",
-                            "|legend=Legend\n",
-                            "|yGrid= |xGrid=\n",
+                            "|width=800\n",
+                            "|xAxisTitle=Date (YYYY-MM)\n",
                             "|xType = date\n",
+                            "|xAxisAngle=-40\n",
+                            "|xAxisFormat=%Y-%m\n",
+                            "|yGrid= 1\n",
+                            "|xGrid= 1\n",
+                            "|colors= #ff8000, #f0be8b\n",
+                            "|yTitle=Cas quotidien\n",
+                            "|yAxisTitle=Nombre de cas\n",
                             "|x = "])
 
-    quebecDeaths.writelines(["=== Quebec new deaths per day ===\n",
-                             "<div style=\"overflow-x:auto;>\n",
+    quebecTotalCases.writelines(["=== Cas totaux ===\n",
+                                 "{{Graph:Chart\n",
+                                 "|width=800\n",
+                                 "|xAxisTitle=Date (YYYY-MM)\n",
+                                 "|xType = date\n",
+                                 "|xAxisAngle=-40\n",
+                                 "|xAxisFormat=%Y-%m\n",
+                                 "|yGrid= 1\n",
+                                 "|xGrid= 1\n",
+                                 "|colors= #ff8000, #f0be8b\n",
+                                 "|yTitle=Cas totaux\n",
+                                 "|yAxisTitle=Nombre de cas\n",
+                                 "|x = "])
+
+    quebecDeaths.writelines(["=== Décès quotidiens ===\n",
                              "{{Graph:Chart\n",
-                             "| height = 180\n",
-                             "| width = 950\n",
-                             "|colors=#FF6347\n",
-                             "|xAxisTitle=Date\n",
-                             "|xAxisFormat=%B %Y\n",
-                             "|xAxisAngle=-40\n",
-                             "|yAxisTitle=No. of new deaths\n",
-                             "| yAxisMin = 0\n",
-                             "|type=line\n",
+                             "|width=800\n",
+                             "|xAxisTitle=Date (YYYY-MM)\n",
                              "|xType = date\n",
+                             "|xAxisAngle=-40\n",
+                             "|xAxisFormat=%Y-%m\n",
+                             "|yGrid= 1\n",
+                             "|xGrid= 1\n",
+                             "|colors= #ff8000, #f0be8b\n",
+                             "|yAxisTitle=Décès\n",
+                             "| y1Title=Décès quotidien\n",
+                             "| y2Title=Décès quotidien CHSLD\n",
+                             "| type=line\n",
+                             "| legend=Légende\n",
                              "|x = "])
+
+    quebecTotalDeaths.writelines(["=== Décès totaux ===\n",
+                                  "{{Graph:Chart\n",
+                                  "|width=800\n",
+                                  "|xAxisTitle=Date (YYYY-MM)\n",
+                                  "|xType = date\n",
+                                  "|xAxisAngle=-40\n",
+                                  "|xAxisFormat=%Y-%m\n",
+                                  "|yGrid= 1\n",
+                                  "|xGrid= 1\n",
+                                  "|colors= #ff8000, #f0be8b\n",
+                                  "|yAxisTitle=Décès\n",
+                                  "| y1Title=Totaux\n",
+                                  "| y2Title=CHSLD\n",
+                                  "| type=area\n",
+                                  "| legend=Légende\n",
+                                  "|x = "])
 
     date = []
     dateDeaths = []
     newCases = []
-    movingAverage = []
+    totalCases = []
+
     deaths = []
+    totalDeaths = []
+    deathsCHSLD = []
+    totalDeathsCHSLD = []
 
     casesFlag = False
     deathsFlag = False
@@ -279,60 +318,78 @@ def quebec():
         if (not line[0]) or (len(line) <= 1):
             break
 
-        if (not casesFlag) and (line[0] == '2020-02-24'):
-            casesFlag = True
-
-        if (not deathsFlag) and (line[0] == '2020-03-15'):
-            deathsFlag = True
+        if line[0] == 'Date inconnue':
+            continue
 
         # Gather data and add to arrays
-        if casesFlag and (line[1] == 'Sexe') and (line[2] == 'TOT'):
+        if (line[1] == 'Sexe') and (line[2] == 'TOT'):
             date.append(line[0])  # Add dates into array
             newCases.append(int(line[11]))  # Add new cases into array
+            totalCases.append(int(line[6]))  # Add new cases into array
 
-        if deathsFlag and (line[1] == 'Sexe') and (line[2] == 'TOT'):
-            dateDeaths.append(line[0])  # Add dates into array
-            deaths.append(line[25])  # Add deaths into array
-
-    # Calculate 7-day moving average
-    i = 0
-    j = 7
-
-    for iterate in range(len(newCases)):
-        if len(newCases[i:j]) == 7:
-            movingAverage.append(computeAverage(newCases[i:j]))
-            i += 1
-            j += 1
+            deaths.append(line[25])
+            deathsCHSLD.append(line[26])
+            totalDeaths.append(line[18])
+            totalDeathsCHSLD.append(line[21])
 
     # Write to file
-    quebecCases = open("QuebecNewCases.txt", "a")
+    quebecCases = open("CasQuotidiensQuebec.txt", "a")
 
     for x in date:
         quebecCases.write(x + ",")
 
-    quebecCases.writelines(["\n|y1Title=Daily new cases\n", "|y1="])
+    quebecCases.writelines(["\n|y="])
     for x in newCases:
         quebecCases.write(str(x) + ",")
 
-    quebecCases.writelines(["\n|y2Title=7-day moving average\n", "|y2="])
-    for x in movingAverage:
-        quebecCases.write(str(x) + ",")
+    quebecCases.writelines(closingStatement)
 
-    quebecCases.writelines(["\n}}\n", "</div>"])
     quebecCases.close()
 
-    quebecDeaths = open("QuebecNewDeaths.txt", "a")
+    # Write to file
+    quebecTotalCases = open("CasTotauxQuebec.txt", "a")
 
-    for x in dateDeaths:
+    for x in date:
+        quebecTotalCases.write(x + ",")
+
+    quebecTotalCases.writelines(["\n|y="])
+    for x in totalCases:
+        quebecTotalCases.write(str(x) + ",")
+
+    quebecTotalCases.writelines(closingStatement)
+    quebecTotalCases.close()
+
+    quebecDeaths = open("DecesQuotidiensQuebec.txt", "a")
+
+    for x in date:
         quebecDeaths.write(x + ",")
 
-    quebecDeaths.writelines(["\n|y1Title=Deaths\n", "|y1="])
+    quebecDeaths.writelines(["\n|y1="])
     for x in deaths:
         quebecDeaths.write(x + ",")
 
-    quebecDeaths.writelines(["\n}}\n", "</div>"])
+    quebecDeaths.writelines(["\n|y2="])
+    for x in deathsCHSLD:
+        quebecDeaths.write(x + ",")
+
+    quebecDeaths.writelines(closingStatement)
     quebecDeaths.close()
 
+    quebecTotalDeaths = open("DecesTotauxQuebec.txt", "a")
+
+    for x in date:
+        quebecTotalDeaths.write(x + ",")
+
+    quebecTotalDeaths.writelines(["\n|y1="])
+    for x in totalDeaths:
+        quebecTotalDeaths.write(x + ",")
+
+    quebecTotalDeaths.writelines(["\n|y2="])
+    for x in totalDeathsCHSLD:
+        quebecTotalDeaths.write(x + ",")
+
+    quebecTotalDeaths.writelines(closingStatement)
+    quebecTotalDeaths.close()
 
 def vaccinations():
     downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv', "vaccination.csv")
@@ -341,24 +398,24 @@ def vaccinations():
     vaccinationsCSV.readline()  # Skip first line
 
     # Open file for writing
-    if path.exists("DailyDoses.txt"):
-        dailyDoses = open("DailyDoses.txt", "w")
+    if path.exists("DosesQuotidiennes.txt"):
+        dailyDoses = open("DosesQuotidiennes.txt", "w")
     else:  # Create file if it doesn't exist
-        dailyDoses = open("DailyDoses.txt", "x")
+        dailyDoses = open("DosesQuotidiennes.txt", "x")
 
     # Open file for writing
-    if path.exists("TotalDoses.txt"):
-        totalDoses = open("TotalDoses.txt", "w")
+    if path.exists("DosesTotales.txt"):
+        totalDoses = open("DosesTotales.txt", "w")
     else:  # Create file if it doesn't exist
-        totalDoses = open("TotalDoses.txt", "x")
+        totalDoses = open("DosesTotales.txt", "x")
 
     # Open file for writing
-    if path.exists("PercentageVaccinated.txt"):
-        percentage = open("PercentageVaccinated.txt", "w")
+    if path.exists("PourcentageVacciné.txt"):
+        percentage = open("PourcentageVacciné.txt", "w")
     else:  # Create file if it doesn't exist
-        percentage = open("PercentageVaccinated.txt", "x")
+        percentage = open("PourcentageVacciné.txt", "x")
 
-    dailyDoses.writelines(["=== Daily doses ===\n",
+    dailyDoses.writelines(["=== Doses quotidiennes  ===\n",
                            "{{Graph:Chart\n",
                            "| height =\n",
                            "|width=800\n",
@@ -369,15 +426,15 @@ def vaccinations():
                            "| yGrid= 1\n",
                            "| xGrid= 1\n",
                            "| colors= #72B8B1, #196165, #929292,\n",
-                           "| legend=Legend\n",
-                           "| y1Title=1st dose\n",
-                           "| y2Title=2nd dose\n",
+                           "| legend=Légende\n",
+                           "| y1Title=1ere dose\n",
+                           "| y2Title=2e dose\n",
                            "| y3Title= Total\n",
-                           "| yAxisTitle = Number of doses\n",
+                           "| yAxisTitle = Nombre de doses\n",
                            "| x="
                            ])
 
-    totalDoses.writelines(["=== Total doses ===\n",
+    totalDoses.writelines(["=== Doses totales ===\n",
                            "{{Graph:Chart\n",
                            "| height =\n",
                            "|width=800\n",
@@ -388,14 +445,14 @@ def vaccinations():
                            "| yGrid= 1\n",
                            "| xGrid= 1\n",
                            "| colors= #72B8B1, #196165, #929292\n",
-                           "| legend=Legend\n",
-                           "| y1Title=1st dose\n",
-                           "| y2Title=2nd dose\n",
+                           "| legend=Légende\n",
+                           "| y1Title=1ere dose\n",
+                           "| y2Title=2e dose\n",
                            "| y3Title= Total\n",
-                           "| yAxisTitle = Cumulative number of doses\n",
+                           "| yAxisTitle = Nombre cumulatif de doses\n",
                            "| x="
                            ])
-    percentage.writelines(["=== Percentage of the population vaccinated ===\n",
+    percentage.writelines(["=== Pourcentage de la population vaccinée ===\n",
                            "{{Graph:Chart\n",
                            "| height =\n",
                            "|width=800\n",
@@ -407,9 +464,9 @@ def vaccinations():
                            "| xGrid= 1\n",
                            "| colors= #72B8B1, #196165, #929292\n",
                            "| legend=Legend\n",
-                           "| y1Title=1st dose\n",
-                           "| y2Title=2nd dose\n",
-                           "| yAxisTitle =  Percentage of the population vaccinated (%)\n",
+                           "| y1Title=1 dose\n",
+                           "| y2Title=2 doses\n",
+                           "| yAxisTitle =  Pourcentage de la population vaccinée  (%)\n",
                            "| x="
                            ])
 
@@ -447,7 +504,7 @@ def vaccinations():
             percentage1st.append(line[10])
             percentage2nd.append(line[11])
 
-    dailyDoses = open("DailyDoses.txt", "a")
+    dailyDoses = open("DosesQuotidiennes.txt", "a")
 
     for x in date:
         dailyDoses.write(x + ",")
@@ -464,12 +521,10 @@ def vaccinations():
     for x in dailyDosesTotal:
         dailyDoses.write(str(x) + ",")
 
-    dailyDoses.writelines(["\n}}\n",
-                           "<div style=\"font-size:80%; line-height:1.2em;\">",
-                           "\n* Source: [https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv CSV file] on the [https://www.inspq.qc.ca/covid-19/donnees/vaccination INSPQ] website.</div>"])
+    dailyDoses.writelines(closingStatementVacc)
     dailyDoses.close()
 
-    totalDoses = open("TotalDoses.txt", "a")
+    totalDoses = open("DosesTotales.txt", "a")
 
     for x in date:
         totalDoses.write(x + ",")
@@ -489,12 +544,10 @@ def vaccinations():
     for x in totalDosesTotal:
         totalDoses.write(str(x) + ",")
 
-    totalDoses.writelines(["\n}}\n",
-                           "<div style=\"font-size:80%; line-height:1.2em;\">",
-                           "\n* Source: [https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv CSV file] on the [https://www.inspq.qc.ca/covid-19/donnees/vaccination INSPQ] website.</div>"])
+    totalDoses.writelines(closingStatementVacc)
     totalDoses.close()
 
-    percentage = open("PercentageVaccinated.txt", "a")
+    percentage = open("PourcentageVacciné.txt", "a")
 
     for x in date:
         percentage.write(x + ",")
@@ -507,9 +560,7 @@ def vaccinations():
     for x in percentage2nd:
         percentage.write(str(x) + ",")
 
-    percentage.writelines(["\n}}\n",
-                           "<div style=\"font-size:80%; line-height:1.2em;\">",
-                           "\n* Source: [https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv CSV file] on the [https://www.inspq.qc.ca/covid-19/donnees/vaccination INSPQ] website.</div>"])
+    percentage.writelines(closingStatementVacc)
     percentage.close()
 
 
