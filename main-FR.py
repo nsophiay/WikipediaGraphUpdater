@@ -491,7 +491,7 @@ def vaccinations():
                            "| yGrid= 1\n",
                            "| xGrid= 1\n",
                            "| colors= #72B8B1, #196165, #929292\n",
-                           "| legend=Legend\n",
+                           "| legend=Légende\n",
                            "| y1Title=1 dose\n",
                            "| y2Title=2 doses\n",
                            "| yAxisTitle =  Pourcentage de la population vaccinée  (%)\n",
