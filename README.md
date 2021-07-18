@@ -11,7 +11,7 @@ This Python program generates text files for the graphs on the following Wikiped
 
 ## HOW TO RUN / EXECUTER LE PROGRAMME
 
-1. [Download main.exe](https://github.com/nsophiay/WikipediaGraphUpdater/raw/main/main.exe) / [télécharger main-FR.exe](https://github.com/nsophiay/WikipediaGraphUpdater/raw/main/main-FR.exe).
+1. [Download main.exe](https://github.com/nsophiay/WikipediaGraphUpdater/raw/main/main.exe) if you are updating the graphs for any Quebec/Montreal related articles, or [CanadaGraphs.exe](https://github.com/nsophiay/WikipediaGraphUpdater/raw/main/CanadaGraphs.exe) if you are updating the graphs for *COVID-19 pandemic in Canada* / [télécharger main-FR.exe](https://github.com/nsophiay/WikipediaGraphUpdater/raw/main/main-FR.exe).
 2. Double-click to run it / double-cliquer sur le fichier afin de l'exécuter.
 3. Several folders should be generated in the directory in which you downloaded main.exe / de nombreux dossiers seront génerés où vous avez téléchargé main-FR.exe.
 4. Go to the folder you want, select the desired text file, and press CTRL+A to select the entire file / aller au bon dossier, selectionner le fichier .txt souhaité, et appuyer sur le CTRL+A afin de selectionner le fichier entier.
