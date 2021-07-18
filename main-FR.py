@@ -14,12 +14,12 @@ fileDir = os.path.dirname(os.path.realpath('__file__'))
 closingStatement = "\n}}\n<div style=\"font-size:80%; line-height:1.2em;\">\n* Source: [" \
                    "https://www.inspq.qc.ca/sites/default/files/covid/donnees/covid19-hist.csv Fichier CSV] sur le " \
                    "site de l'[https://www.inspq.qc.ca/covid-19/donnees INSPQ] récupéré en date du " \
-                   ""+todaysDate+".</div> "
+                   "" + todaysDate + ".</div> "
 
 closingStatementVacc = "\n}}\n<div style=\"font-size:80%; line-height:1.2em;\">\n* Source: [" \
-                   "https://inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv?prout=1626376027 Fichier CSV] sur le " \
-                   "site de l'[https://www.inspq.qc.ca/covid-19/donnees/vaccination INSPQ] récupéré en date du " \
-                   ""+todaysDate+".</div> "
+                       "https://inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv?prout=1626376027 Fichier CSV] sur le " \
+                       "site de l'[https://www.inspq.qc.ca/covid-19/donnees/vaccination INSPQ] récupéré en date du " \
+                       "" + todaysDate + ".</div> "
 
 
 def downloadCSV(url, fileName):
@@ -223,7 +223,7 @@ def quebec():
     quebecCasesCSV = open("covid19-hist.csv", "r")
 
     quebecCasesCSV.readline()  # Skip first line
-    
+
     # File names
     CasQuotidiensQuebec = "Fichiers_Quebec/CasQuotidiensQuebec.txt"
     CasTotauxQuebec = "Fichiers_Quebec/CasTotauxQuebec.txt"
@@ -591,8 +591,10 @@ def vaccinations():
     percentage.close()
 
 
-downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/covid19-hist.csv', "covid19-hist.csv")
-# Generate all files
-montreal()
-quebec()
-vaccinations()
+if __name__ == "__main__":
+    downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/covid19-hist.csv', "covid19-hist.csv")
+
+    # Generate all files
+    montreal()
+    quebec()
+    vaccinations()

@@ -5,6 +5,9 @@ from datetime import date
 import datetime
 
 
+# TODO
+# Merge this with the main file so that you can run one single main.exe
+
 def computeAverage(lst):
     return sum(lst) / len(lst)
 
@@ -468,6 +471,7 @@ def atlanticCanada():
     writeData.close()
     canadaCSV.close()
 
+
 def northernCanada():
     canadaCSV = open("covid19-download.csv", "r")
     canadaCSV.readline()  # Skip first line
@@ -547,7 +551,6 @@ def northernCanada():
             provinceFlags[2] = 1
             newCasesNU.append(int(line[15]))
 
-
     # Calculate 7-day moving average
     i = 0
     j = 7
@@ -575,7 +578,6 @@ def northernCanada():
             movingAverageNU.append(computeAverage(newCasesNU[i:j]))
             i += 1
             j += 1
-
 
     # Write to file
 
@@ -606,6 +608,7 @@ def northernCanada():
 
     writeData.close()
     canadaCSV.close()
+
 
 westernCanada()
 centralCanada()
