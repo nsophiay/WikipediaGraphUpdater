@@ -1,7 +1,9 @@
 import requests
 import re
 from os import path
+import os
 
+fileDir = os.path.dirname(os.path.realpath('__file__'))
 
 # For the 7-day moving average computation
 def computeAverage(lst):
@@ -20,11 +22,17 @@ def montreal():
     montrealCasesCSV = open("courbe.csv", "r")
     montrealCasesCSV.readline()  # Skip first line
 
+    # File names
+    MontrealNewCases = "Files_Montreal/MontrealNewCases.txt"
+
+    if not path.exists("Files_Montreal"):
+        os.makedirs("Files_Montreal")
+
     # Open file for writing
-    if path.exists("MontrealNewCases.txt"):
-        montrealCases = open("MontrealNewCases.txt", "w")
+    if path.exists(MontrealNewCases):
+        montrealCases = open(MontrealNewCases, "w")
     else:  # Create file if it doesn't exist
-        montrealCases = open("MontrealNewCases.txt", "x")
+        montrealCases = open(MontrealNewCases, "x")
 
     montrealCases.writelines(["=== Montreal region, new cases per day ===\n",
                               "{{Graph:Chart\n",
@@ -51,7 +59,7 @@ def montreal():
         totalCases.append(line[2])
 
     # Write to file
-    montrealCases = open("MontrealNewCases.txt", "a")
+    montrealCases = open(MontrealNewCases, "a")
     for x in date:
         montrealCases.write(x + ",")
 
@@ -72,18 +80,25 @@ def quebec():
     quebecCasesCSV = open("covid19-hist.csv", "r")
 
     quebecCasesCSV.readline()  # Skip first line
+    
+    # File names
+    QuebecNewCases = "Files_Quebec/QuebecNewCases.txt"
+    QuebecNewDeaths = "Files_Quebec/QuebecNewDeaths.txt"
+
+    if not path.exists("Files_Quebec"):
+        os.makedirs("Files_Quebec")
 
     # Open file for writing
-    if path.exists("QuebecNewCases.txt"):
-        quebecCases = open("QuebecNewCases.txt", "w")
+    if path.exists(QuebecNewCases):
+        quebecCases = open(QuebecNewCases, "w")
     else:  # Create file if it doesn't exist
-        quebecCases = open("QuebecNewCases.txt", "x")
+        quebecCases = open(QuebecNewCases, "x")
 
     # Open file for writing
-    if path.exists("QuebecNewDeaths.txt"):
-        quebecDeaths = open("QuebecNewDeaths.txt", "w")
+    if path.exists(QuebecNewDeaths):
+        quebecDeaths = open(QuebecNewDeaths, "w")
     else:  # Create file if it doesn't exist
-        quebecDeaths = open("QuebecNewDeaths.txt", "x")
+        quebecDeaths = open(QuebecNewDeaths, "x")
 
     quebecCases.writelines(["=== Quebec new cases per day ===\n",
                             "<div style=\"overflow-x:auto;>\n",
@@ -157,7 +172,7 @@ def quebec():
             j += 1
 
     # Write to file
-    quebecCases = open("QuebecNewCases.txt", "a")
+    quebecCases = open(QuebecNewCases, "a")
 
     for x in date:
         quebecCases.write(x + ",")
@@ -173,7 +188,7 @@ def quebec():
     quebecCases.writelines(["\n}}\n", "</div>"])
     quebecCases.close()
 
-    quebecDeaths = open("QuebecNewDeaths.txt", "a")
+    quebecDeaths = open(QuebecNewDeaths, "a")
 
     for x in dateDeaths:
         quebecDeaths.write(x + ",")
@@ -185,46 +200,55 @@ def quebec():
     quebecDeaths.writelines(["\n}}\n", "</div>"])
     quebecDeaths.close()
 
+
 def vaccinations():
     downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv', "vaccination.csv")
     vaccinationsCSV = open("vaccination.csv", "r")
 
     vaccinationsCSV.readline()  # Skip first line
 
-    # Open file for writing
-    if path.exists("DailyDoses.txt"):
-        dailyDoses = open("DailyDoses.txt", "w")
-    else:  # Create file if it doesn't exist
-        dailyDoses = open("DailyDoses.txt", "x")
+    # File names
+    DailyDoses = "Files_Vaccination/DailyDoses.txt"
+    TotalDoses = "Files_Vaccination/TotalDoses.txt"
+    PercentageVaccinated = "Files_Vaccination/PercentageVaccinated.txt"
+
+    if not path.exists("Files_Vaccination"):
+        os.makedirs("Files_Vaccination")
 
     # Open file for writing
-    if path.exists("TotalDoses.txt"):
-        totalDoses = open("TotalDoses.txt", "w")
+    if path.exists(DailyDoses):
+        dailyDoses = open(DailyDoses, "w")
     else:  # Create file if it doesn't exist
-        totalDoses = open("TotalDoses.txt", "x")
+        dailyDoses = open(DailyDoses, "x")
 
     # Open file for writing
-    if path.exists("PercentageVaccinated.txt"):
-        percentage = open("PercentageVaccinated.txt", "w")
+    if path.exists(TotalDoses):
+        totalDoses = open(TotalDoses, "w")
     else:  # Create file if it doesn't exist
-        percentage = open("PercentageVaccinated.txt", "x")
+        totalDoses = open(TotalDoses, "x")
+
+    # Open file for writing
+    if path.exists(PercentageVaccinated):
+        percentage = open(PercentageVaccinated, "w")
+    else:  # Create file if it doesn't exist
+        percentage = open(PercentageVaccinated, "x")
 
     dailyDoses.writelines(["=== Daily doses ===\n",
-                            "{{Graph:Chart\n",
+                           "{{Graph:Chart\n",
                            "| height =\n",
-                            "|width=800\n",
-                            "| xAxisTitle=Date (YYYY-MM)\n",
-                            "| xType = date\n",
-                            "| xAxisAngle=-40\n",
-                            "| xAxisFormat=%Y-%m\n",
-                            "| yGrid= 1\n",
-                            "| xGrid= 1\n",
-                            "| colors= #72B8B1, #196165, #929292,\n",
-                            "| legend=Legend\n",
-                            "| y1Title=1st dose\n",
-                            "| y2Title=2nd dose\n",
-                            "| y3Title= Total\n",
-                            "| yAxisTitle = Number of doses\n",
+                           "|width=800\n",
+                           "| xAxisTitle=Date (YYYY-MM)\n",
+                           "| xType = date\n",
+                           "| xAxisAngle=-40\n",
+                           "| xAxisFormat=%Y-%m\n",
+                           "| yGrid= 1\n",
+                           "| xGrid= 1\n",
+                           "| colors= #72B8B1, #196165, #929292,\n",
+                           "| legend=Legend\n",
+                           "| y1Title=1st dose\n",
+                           "| y2Title=2nd dose\n",
+                           "| y3Title= Total\n",
+                           "| yAxisTitle = Number of doses\n",
                            "| x="
                            ])
 
@@ -298,7 +322,7 @@ def vaccinations():
             percentage1st.append(line[10])
             percentage2nd.append(line[11])
 
-    dailyDoses = open("DailyDoses.txt", "a")
+    dailyDoses = open(DailyDoses, "a")
 
     for x in date:
         dailyDoses.write(x + ",")
@@ -317,10 +341,12 @@ def vaccinations():
 
     dailyDoses.writelines(["\n}}\n",
                            "<div style=\"font-size:80%; line-height:1.2em;\">",
-                           "\n* Source: [https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv CSV file] on the [https://www.inspq.qc.ca/covid-19/donnees/vaccination INSPQ] website.</div>"])
+                           "\n* Source: [https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv "
+                           "CSV file] on the [https://www.inspq.qc.ca/covid-19/donnees/vaccination INSPQ] "
+                           "website.</div>"])
     dailyDoses.close()
 
-    totalDoses = open("TotalDoses.txt", "a")
+    totalDoses = open(TotalDoses, "a")
 
     for x in date:
         totalDoses.write(x + ",")
@@ -342,10 +368,10 @@ def vaccinations():
 
     totalDoses.writelines(["\n}}\n",
                            "<div style=\"font-size:80%; line-height:1.2em;\">",
-                          "\n* Source: [https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv CSV file] on the [https://www.inspq.qc.ca/covid-19/donnees/vaccination INSPQ] website.</div>"])
+                           "\n* Source: [https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv CSV file] on the [https://www.inspq.qc.ca/covid-19/donnees/vaccination INSPQ] website.</div>"])
     totalDoses.close()
 
-    percentage = open("PercentageVaccinated.txt", "a")
+    percentage = open(PercentageVaccinated, "a")
 
     for x in date:
         percentage.write(x + ",")
@@ -360,9 +386,8 @@ def vaccinations():
 
     percentage.writelines(["\n}}\n",
                            "<div style=\"font-size:80%; line-height:1.2em;\">",
-                          "\n* Source: [https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv CSV file] on the [https://www.inspq.qc.ca/covid-19/donnees/vaccination INSPQ] website.</div>"])
+                           "\n* Source: [https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv CSV file] on the [https://www.inspq.qc.ca/covid-19/donnees/vaccination INSPQ] website.</div>"])
     percentage.close()
-
 
 
 # Generate all files

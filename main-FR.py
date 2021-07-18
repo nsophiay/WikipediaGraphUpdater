@@ -1,10 +1,15 @@
 import requests
 import re
 from os import path
+import os
 from datetime import date
+
+# Global variables
 
 todaysDate = date.today()
 todaysDate = todaysDate.strftime("%Y-%m-%d")
+
+fileDir = os.path.dirname(os.path.realpath('__file__'))
 
 closingStatement = "\n}}\n<div style=\"font-size:80%; line-height:1.2em;\">\n* Source: [" \
                    "https://www.inspq.qc.ca/sites/default/files/covid/donnees/covid19-hist.csv Fichier CSV] sur le " \
@@ -24,31 +29,41 @@ def downloadCSV(url, fileName):
 
 
 def montreal():
-    downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/covid19-hist.csv', "covid19-hist.csv")
     montrealCasesCSV = open("covid19-hist.csv", "r")
     montrealCasesCSV.readline()  # Skip first line
 
-    # Open file for writing
-    if path.exists("CasQuotidiensMontreal.txt"):
-        montrealDailyCases = open("CasQuotidiensMontreal.txt", "w")
-    else:  # Create file if it doesn't exist
-        montrealDailyCases = open("CasQuotidiensMontreal.txt", "x")
+    # File names
+    CasQuotidiensMontreal = "Fichiers_Montreal/CasQuotidiensMontreal.txt"
+    CasTotauxMontreal = "Fichiers_Montreal/CasTotauxMontreal.txt"
+    DecesQuotidiensMontreal = "Fichiers_Montreal/DecesQuotidiensMontreal.txt"
+    DecesTotauxMontreal = "Fichiers_Montreal/DecesTotauxMontreal.txt"
 
-    if path.exists("CasTotauxMontreal.txt"):
-        montrealTotalCases = open("CasTotauxMontreal.txt", "w")
-    else:  # Create file if it doesn't exist
-        montrealTotalCases = open("CasTotauxMontreal.txt", "x")
+    if not path.exists("Fichiers_Montreal"):
+        os.makedirs("Fichiers_Montreal")
 
     # Open file for writing
-    if path.exists("DecesQuotidiensMontreal.txt"):
-        montrealDailyDeaths = open("DecesQuotidiensMontreal.txt", "w")
+    if path.exists(CasQuotidiensMontreal):
+        fileName = os.path.join(fileDir, CasQuotidiensMontreal)
+        montrealDailyCases = open(fileName, "w")
     else:  # Create file if it doesn't exist
-        montrealDailyDeaths = open("DecesQuotidiensMontreal.txt", "x")
+        fileName = os.path.join(fileDir, CasQuotidiensMontreal)
+        montrealDailyCases = open(fileName, "x")
 
-    if path.exists("DecesTotauxMontreal.txt"):
-        montrealTotalDeaths = open("DecesTotauxMontreal.txt", "w")
+    if path.exists(CasTotauxMontreal):
+        montrealTotalCases = open(CasTotauxMontreal, "w")
     else:  # Create file if it doesn't exist
-        montrealTotalDeaths = open("DecesTotauxMontreal.txt", "x")
+        montrealTotalCases = open(CasTotauxMontreal, "x")
+
+    # Open file for writing
+    if path.exists(DecesQuotidiensMontreal):
+        montrealDailyDeaths = open(DecesQuotidiensMontreal, "w")
+    else:  # Create file if it doesn't exist
+        montrealDailyDeaths = open(DecesQuotidiensMontreal, "x")
+
+    if path.exists(DecesTotauxMontreal):
+        montrealTotalDeaths = open(DecesTotauxMontreal, "w")
+    else:  # Create file if it doesn't exist
+        montrealTotalDeaths = open(DecesTotauxMontreal, "x")
 
     montrealDailyCases.writelines(["=== Cas quotidiens ===\n",
                                    "{{Graph:Chart\n",
@@ -147,7 +162,7 @@ def montreal():
             totalDeaths.append(line[18])
             totalDeathsCHSLD.append(line[21])
 
-    montrealDailyCases = open("CasQuotidiensMontreal.txt", "a")
+    montrealDailyCases = open(CasQuotidiensMontreal, "a")
 
     for x in date:
         montrealDailyCases.write(x + ",")
@@ -159,7 +174,7 @@ def montreal():
     montrealDailyCases.writelines(closingStatement)
     montrealDailyCases.close()
 
-    montrealTotalCases = open("CasTotauxMontreal.txt", "a")
+    montrealTotalCases = open(CasTotauxMontreal, "a")
 
     for x in date:
         montrealTotalCases.write(x + ",")
@@ -168,14 +183,10 @@ def montreal():
     for x in totalCases:
         montrealTotalCases.write(str(x) + ",")
 
-    montrealTotalCases.writelines(["\n}}\n",
-                                   "<div style=\"font-size:80%; line-height:1.2em;\">",
-                                   "\n* Source: [https://www.inspq.qc.ca/sites/default/files/covid/donnees/covid19-hist.csv Fichier CSV] sur le site de l'[https://www.inspq.qc.ca/covid-19/donnees INSPQ] récupéré en date du ",
-                                   todaysDate,
-                                   ".</div>"])
+    montrealTotalCases.writelines(closingStatement)
     montrealTotalCases.close()
 
-    montrealDailyDeaths = open("DecesQuotidiensMontreal.txt", "a")
+    montrealDailyDeaths = open(DecesQuotidiensMontreal, "a")
 
     for x in date:
         montrealDailyDeaths.write(x + ",")
@@ -191,7 +202,7 @@ def montreal():
     montrealDailyDeaths.writelines(closingStatement)
     montrealDailyDeaths.close()
 
-    montrealTotalDeaths = open("DecesTotauxMontreal.txt", "a")
+    montrealTotalDeaths = open(DecesTotauxMontreal, "a")
 
     for x in date:
         montrealTotalDeaths.write(x + ",")
@@ -209,33 +220,41 @@ def montreal():
 
 
 def quebec():
-    downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/covid19-hist.csv', "covid19-hist.csv")
     quebecCasesCSV = open("covid19-hist.csv", "r")
 
     quebecCasesCSV.readline()  # Skip first line
+    
+    # File names
+    CasQuotidiensQuebec = "Fichiers_Quebec/CasQuotidiensQuebec.txt"
+    CasTotauxQuebec = "Fichiers_Quebec/CasTotauxQuebec.txt"
+    DecesQuotidiensQuebec = "Fichiers_Quebec/DecesQuotidiensQuebec.txt"
+    DecesTotauxQuebec = "Fichiers_Quebec/DecesTotauxQuebec.txt"
+
+    if not path.exists("Fichiers_Quebec"):
+        os.makedirs("Fichiers_Quebec")
 
     # Open file for writing
-    if path.exists("CasQuotidiensQuebec.txt"):
-        quebecCases = open("CasQuotidiensQuebec.txt", "w")
+    if path.exists(CasQuotidiensQuebec):
+        quebecCases = open(CasQuotidiensQuebec, "w")
     else:  # Create file if it doesn't exist
-        quebecCases = open("CasQuotidiensQuebec.txt", "x")
+        quebecCases = open(CasQuotidiensQuebec, "x")
 
-    if path.exists("CasTotauxQuebec.txt"):
-        quebecTotalCases = open("CasTotauxQuebec.txt", "w")
+    if path.exists(CasTotauxQuebec):
+        quebecTotalCases = open(CasTotauxQuebec, "w")
     else:  # Create file if it doesn't exist
-        quebecTotalCases = open("CasTotauxQuebec.txt", "x")
-
-    # Open file for writing
-    if path.exists("DecesQuotidiensQuebec.txt"):
-        quebecDeaths = open("DecesQuotidiensQuebec.txt", "w")
-    else:  # Create file if it doesn't exist
-        quebecDeaths = open("DecesQuotidiensQuebec.txt", "x")
+        quebecTotalCases = open(CasTotauxQuebec, "x")
 
     # Open file for writing
-    if path.exists("DecesTotauxQuebec.txt"):
-        quebecTotalDeaths = open("DecesTotauxQuebec.txt", "w")
+    if path.exists(DecesQuotidiensQuebec):
+        quebecDeaths = open(DecesQuotidiensQuebec, "w")
     else:  # Create file if it doesn't exist
-        quebecTotalDeaths = open("DecesTotauxQuebec.txt", "x")
+        quebecDeaths = open(DecesQuotidiensQuebec, "x")
+
+    # Open file for writing
+    if path.exists(DecesTotauxQuebec):
+        quebecTotalDeaths = open(DecesTotauxQuebec, "w")
+    else:  # Create file if it doesn't exist
+        quebecTotalDeaths = open(DecesTotauxQuebec, "x")
 
     quebecCases.writelines(["=== Cas quotidiens ===\n",
                             "{{Graph:Chart\n",
@@ -333,7 +352,7 @@ def quebec():
             totalDeathsCHSLD.append(line[21])
 
     # Write to file
-    quebecCases = open("CasQuotidiensQuebec.txt", "a")
+    quebecCases = open(CasQuotidiensQuebec, "a")
 
     for x in date:
         quebecCases.write(x + ",")
@@ -347,7 +366,7 @@ def quebec():
     quebecCases.close()
 
     # Write to file
-    quebecTotalCases = open("CasTotauxQuebec.txt", "a")
+    quebecTotalCases = open(CasTotauxQuebec, "a")
 
     for x in date:
         quebecTotalCases.write(x + ",")
@@ -359,7 +378,7 @@ def quebec():
     quebecTotalCases.writelines(closingStatement)
     quebecTotalCases.close()
 
-    quebecDeaths = open("DecesQuotidiensQuebec.txt", "a")
+    quebecDeaths = open(DecesQuotidiensQuebec, "a")
 
     for x in date:
         quebecDeaths.write(x + ",")
@@ -375,7 +394,7 @@ def quebec():
     quebecDeaths.writelines(closingStatement)
     quebecDeaths.close()
 
-    quebecTotalDeaths = open("DecesTotauxQuebec.txt", "a")
+    quebecTotalDeaths = open(DecesTotauxQuebec, "a")
 
     for x in date:
         quebecTotalDeaths.write(x + ",")
@@ -391,29 +410,37 @@ def quebec():
     quebecTotalDeaths.writelines(closingStatement)
     quebecTotalDeaths.close()
 
+
 def vaccinations():
-    downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv', "vaccination.csv")
     vaccinationsCSV = open("vaccination.csv", "r")
 
     vaccinationsCSV.readline()  # Skip first line
 
-    # Open file for writing
-    if path.exists("DosesQuotidiennes.txt"):
-        dailyDoses = open("DosesQuotidiennes.txt", "w")
-    else:  # Create file if it doesn't exist
-        dailyDoses = open("DosesQuotidiennes.txt", "x")
+    # File names
+    DosesQuotidiennes = "Fichiers_Vaccination/DosesQuotidiennes.txt"
+    DosesTotales = "Fichiers_Vaccination/DosesTotales.txt"
+    PourcentageVaccine = "Fichiers_Vaccination/PourcentageVacciné.txt"
+
+    if not path.exists("Fichiers_Vaccination"):
+        os.makedirs("Fichiers_Vaccination")
 
     # Open file for writing
-    if path.exists("DosesTotales.txt"):
-        totalDoses = open("DosesTotales.txt", "w")
+    if path.exists(DosesQuotidiennes):
+        dailyDoses = open(DosesQuotidiennes, "w")
     else:  # Create file if it doesn't exist
-        totalDoses = open("DosesTotales.txt", "x")
+        dailyDoses = open(DosesQuotidiennes, "x")
 
     # Open file for writing
-    if path.exists("PourcentageVacciné.txt"):
-        percentage = open("PourcentageVacciné.txt", "w")
+    if path.exists(DosesTotales):
+        totalDoses = open(DosesTotales, "w")
     else:  # Create file if it doesn't exist
-        percentage = open("PourcentageVacciné.txt", "x")
+        totalDoses = open(DosesTotales, "x")
+
+    # Open file for writing
+    if path.exists(PourcentageVaccine):
+        percentage = open(PourcentageVaccine, "w")
+    else:  # Create file if it doesn't exist
+        percentage = open(PourcentageVaccine, "x")
 
     dailyDoses.writelines(["=== Doses quotidiennes  ===\n",
                            "{{Graph:Chart\n",
@@ -504,7 +531,7 @@ def vaccinations():
             percentage1st.append(line[10])
             percentage2nd.append(line[11])
 
-    dailyDoses = open("DosesQuotidiennes.txt", "a")
+    dailyDoses = open(DosesQuotidiennes, "a")
 
     for x in date:
         dailyDoses.write(x + ",")
@@ -524,7 +551,7 @@ def vaccinations():
     dailyDoses.writelines(closingStatementVacc)
     dailyDoses.close()
 
-    totalDoses = open("DosesTotales.txt", "a")
+    totalDoses = open(DosesTotales, "a")
 
     for x in date:
         totalDoses.write(x + ",")
@@ -547,7 +574,7 @@ def vaccinations():
     totalDoses.writelines(closingStatementVacc)
     totalDoses.close()
 
-    percentage = open("PourcentageVacciné.txt", "a")
+    percentage = open(PourcentageVaccine, "a")
 
     for x in date:
         percentage.write(x + ",")
@@ -564,6 +591,7 @@ def vaccinations():
     percentage.close()
 
 
+downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/covid19-hist.csv', "covid19-hist.csv")
 # Generate all files
 montreal()
 quebec()
