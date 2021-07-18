@@ -44,10 +44,10 @@ Ce fichier contient le graphique qui montre les décès totaux au Québec.
 
 ### Files_Vaccination / Fichiers_Vaccination
 #### DailyDoses.txt / DosesQuotidiennes.txt
-This file contains the updated graph showing daily vaccinations in Quebec, including the first, second, and total number of doses / ce fichier contient le graphique qui montre les vaccinations quotidiennes au Québec, dont la prémière, deuxième, et de doses.
+This file contains the updated graph showing daily vaccinations in Quebec, including the first, second, and total number of doses / ce fichier contient le graphique qui montre les vaccinations quotidiennes au Québec, dont la prémière dose, la deuxième dose, et les doses totales.
 
 #### PercentageVaccinated.txt / PourcentageVacciné.txt
-This file contains the updated graph showing the percentage of the Quebec population that is vaccinated with one or two doses / ce fichier contient le graphique qui montre le pourcentage de la population vacciné au Québec avec une ou deux doses.
+This file contains the updated graph showing the percentage of the Quebec population that is vaccinated with one or two doses / ce fichier contient le graphique qui montre le pourcentage de la population vaccinée au Québec avec une ou deux doses.
 
 #### TotalDoses.txt / DosesTotales.txt
 This file contains the graph showing the cumulative number of first, second, and total doses in Quebec / ce fichier contient le graphique qui montre le nombre cumulatif de prémières et deuxièmes doses au Québec.
