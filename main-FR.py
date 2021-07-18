@@ -412,6 +412,7 @@ def quebec():
 
 
 def vaccinations():
+    downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv', "vaccination.csv")
     vaccinationsCSV = open("vaccination.csv", "r")
 
     vaccinationsCSV.readline()  # Skip first line
