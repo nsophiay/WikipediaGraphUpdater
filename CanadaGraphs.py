@@ -1,12 +1,11 @@
+import os
+
 import requests
 import re
 from os import path
 from datetime import date
 import datetime
 
-
-# TODO
-# Merge this with the main file so that you can run one single main.exe
 
 def computeAverage(lst):
     return sum(lst) / len(lst)
@@ -16,11 +15,16 @@ def computeAverage(lst):
 r = requests.get("https://health-infobase.canada.ca/src/data/covidLive/covid19-download.csv", allow_redirects=True)
 open("covid19-download.csv", 'wb').write(r.content)
 
+CanadaCases = "Files_Canada/CanadaCases.txt"
+
+if not path.exists("Files_Canada"):
+    os.makedirs("Files_Canada")
+
 # Open file for writing
-if path.exists("CanadaCases.txt"):
-    cases = open("CanadaCases.txt", "w")
+if path.exists(CanadaCases):
+    cases = open(CanadaCases, "w")
 else:  # Create file if it doesn't exist
-    cases = open("CanadaCases.txt", "x")
+    cases = open(CanadaCases, "x")
 
 today = date.today()
 currentDate = today.strftime("%B %d, %Y")
@@ -158,7 +162,7 @@ def westernCanada():
             j += 1
 
     # Write to file
-    writeData = open("CanadaCases.txt", "a")
+    writeData = open(CanadaCases, "a")
 
     for x in dates:
         writeData.write(x + ",")
@@ -198,7 +202,7 @@ def centralCanada():
     canadaCSV = open("covid19-download.csv", "r")
     canadaCSV.readline()  # Skip first line
 
-    writeData = open("CanadaCases.txt", "a")
+    writeData = open(CanadaCases, "a")
     writeData.writelines(["<br><div style=\"text-align:center\">'''Central Canada'''</div>\n",
                           "{{#invoke:Graph:Chart|\n",
                           "|width=700\n",
@@ -284,8 +288,6 @@ def centralCanada():
             j += 1
 
     # Write to file
-    for j in dates:
-        print(j)
 
     for x in dates:
         writeData.write(x + ",")
@@ -315,7 +317,7 @@ def atlanticCanada():
     canadaCSV = open("covid19-download.csv", "r")
     canadaCSV.readline()  # Skip first line
 
-    writeData = open("CanadaCases.txt", "a")
+    writeData = open(CanadaCases, "a")
     writeData.writelines(["<br><div style=\"text-align:center\">'''Atlantic Canada'''</div>\n",
                           "{{#invoke:Graph:Chart|\n",
                           "|width=700\n",
@@ -476,7 +478,7 @@ def northernCanada():
     canadaCSV = open("covid19-download.csv", "r")
     canadaCSV.readline()  # Skip first line
 
-    writeData = open("CanadaCases.txt", "a")
+    writeData = open(CanadaCases, "a")
     writeData.writelines(["<br><div style=\"text-align:center\">'''Northern Canada'''</div>\n",
                           "{{#invoke:Graph:Chart|\n",
                           "|width=700\n",
@@ -610,7 +612,8 @@ def northernCanada():
     canadaCSV.close()
 
 
-westernCanada()
-centralCanada()
-atlanticCanada()
-northernCanada()
+if __name__ == "__main__":
+    westernCanada()
+    centralCanada()
+    atlanticCanada()
+    northernCanada()

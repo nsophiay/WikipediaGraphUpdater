@@ -5,7 +5,8 @@ import os
 
 fileDir = os.path.dirname(os.path.realpath('__file__'))
 
-# For the 7-day moving average computation
+
+# Helper function to compute the average of a list
 def computeAverage(lst):
     return sum(lst) / len(lst)
 
@@ -22,11 +23,11 @@ def montreal():
     montrealCasesCSV = open("courbe.csv", "r")
     montrealCasesCSV.readline()  # Skip first line
 
+    if not path.exists("Files_Montreal"):  # Check if folder exists. If not, create it
+        os.makedirs("Files_Montreal")
+
     # File names
     MontrealNewCases = "Files_Montreal/MontrealNewCases.txt"
-
-    if not path.exists("Files_Montreal"):
-        os.makedirs("Files_Montreal")
 
     # Open file for writing
     if path.exists(MontrealNewCases):
@@ -80,7 +81,7 @@ def quebec():
     quebecCasesCSV = open("covid19-hist.csv", "r")
 
     quebecCasesCSV.readline()  # Skip first line
-    
+
     # File names
     QuebecNewCases = "Files_Quebec/QuebecNewCases.txt"
     QuebecNewDeaths = "Files_Quebec/QuebecNewDeaths.txt"
@@ -390,7 +391,8 @@ def vaccinations():
     percentage.close()
 
 
-# Generate all files
-montreal()
-quebec()
-vaccinations()
+if __name__ == "__main__":
+    # Generate all files
+    montreal()
+    quebec()
+    vaccinations()
