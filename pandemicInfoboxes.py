@@ -1,7 +1,7 @@
 import os
 import time
 import re
-import datetime
+from datetime import datetime
 from os import path
 
 from bs4 import BeautifulSoup
@@ -18,12 +18,20 @@ def openFile(filePath):
     return fileName
 
 
+def openDriver(url):
+    driver = webdriver.Chrome()
+    driver.get(url)
+    return driver
+
+
+def smallDate(date):
+    return "<small>(" + date + ")</small>"
+
+
 # Variables
 
-todaysDate = datetime.datetime.now()
+todaysDate = datetime.now()
 todaysDate = f'{todaysDate:%B} {todaysDate.day}, {todaysDate.year}'
-
-MTL_ROW = 8
 
 # Check if folder for files exists. If not, create it
 if not path.exists("infoboxes"):
@@ -52,9 +60,7 @@ def vaccination():  # Function for COVID-19 vaccination in Quebec article
     quebecPopulation = 8585523  # Stats Can estimate Q2 2021
 
     # Set up web scraping
-    driver = webdriver.Chrome()
-    url = "https://www.inspq.qc.ca/covid-19/donnees/vaccination"
-    driver.get(url)
+    driver = openDriver("https://www.inspq.qc.ca/covid-19/donnees/vaccination")
 
     try:
         time.sleep(1.5)  # Wait for the page to load completely
@@ -80,31 +86,31 @@ def vaccination():  # Function for COVID-19 vaccination in Quebec article
     finally:
         driver.quit()
 
-    # Write to infobox file
+    refs = ["<ref name=\"inspqVacc\">{{cite web |title=Données de " \
+            "vaccination contre la COVID-19 au Québec " \
+            "|url=https://www.inspq.qc.ca/covid-19/donnees/vaccination |website=INSPQ " \
+            "|publisher=Gouvernement |access-date=2021-03-19|language=fr}}</ref>",
+            "<ref name=\"inspqVacc\"/>"
+            ]
 
-    textInfobox += str(
-        f'{dosesAdministered:,}') + "''' doses administered <ref name=\"inspqVacc\">{{cite web |title=Données de " \
-                                    "vaccination contre la COVID-19 au Québec " \
-                                    "|url=https://www.inspq.qc.ca/covid-19/donnees/vaccination |website=INSPQ " \
-                                    "|publisher=Gouvernement |access-date=2021-03-19|language=fr}}</ref> <small>(" + todaysDate + ")</small>\n" \
-                                                                                                                                  "<br>'''" + str(
-        f'{secondDosesAdministered:,}') + \
-                   "''' second doses administered<ref name=\"inspqVacc\"/> <small>(" + todaysDate + \
-                   ")</small>\n| outcome                  = '''" + str(populationVaccinated) + \
-                   "%''' of the population has received at least one dose of a vaccine" \
-                   "<ref name=\"inspqVacc\"/> <small>(" + todaysDate + ")</small><br>'''" + \
-                   str(eligiblePopulationVaccinated) + "%''' of the population " \
-                                                       "≥12 years old is \"adequately vaccinated\"" \
-                                                       "{{efn|The Quebec government defines an \"adequately " \
-                                                       "vaccinated\" person" \
-                                                       "as someone who has either received two doses of a vaccine or " \
-                                                       "one dose of a" \
-                                                       "vaccine if they have already had COVID-19}}<ref " \
-                                                       "name=\"inspqVacc\"/> <small>(" + todaysDate + ")</small>\n" \
-                                                                                                      "|organizers               = - [[Health Canada]]<br>- [[Public Health Agency of " \
-                                                                                                      "Canada]]<br>- [[Quebec|Quebec government]]<br>- [[Municipal government in Canada]]\n" \
-                                                                                                      "| website                  = [https://www.quebec.ca/en/health/health-issues/a-z/2019-coronavirus" \
-                                                                                                      "/situation-coronavirus-in-quebec/covid-19-vaccination-data Government of Quebec]\n}} "
+    # Write to infobox file
+    
+    smallTodaysDate = smallDate(todaysDate)
+
+    textInfobox += str(f'{dosesAdministered:,}') + "''' doses administered  " + smallTodaysDate + refs[0] + "\n" \
+        "<br>'''" + str(f'{secondDosesAdministered:,}') + \
+        "''' second doses administered " + smallTodaysDate + refs[1] + \
+        "\n| outcome                  = '''" + str(populationVaccinated) + \
+        "%''' of the population has received at least one dose of a vaccine " + smallTodaysDate + refs[1] + \
+        "<br>'''" + str(eligiblePopulationVaccinated) + "%''' of the population " \
+        "≥12 years old is \"adequately vaccinated\"" \
+        "{{efn|The Quebec government defines an \"adequately vaccinated\" person" \
+        "as someone who has either received two doses of a vaccine or one dose of a" \
+        "vaccine if they have already had COVID-19}} " + smallTodaysDate + refs[1] + "\n" \
+        "|organizers               = - [[Health Canada]]<br>- [[Public Health Agency of " \
+        "Canada]]<br>- [[Quebec|Quebec government]]<br>- [[Municipal government in Canada]]\n" \
+        "| website                  = [https://www.quebec.ca/en/health/health-issues/a-z/2019-coronavirus" \
+        "/situation-coronavirus-in-quebec/covid-19-vaccination-data Government of Quebec]\n}} "
 
     infoboxFile.write(textInfobox)
 
@@ -118,32 +124,34 @@ def vaccination():  # Function for COVID-19 vaccination in Quebec article
 
     secondDosePercentage = round(populationVaccinated - oneDosePercentage, 1)
 
-    textPiechart += "\n| label1 = Unvaccinated population: ~" + str(
-        f'{unvaccinated:,}') + " people <!-- Quebec population estimate as of Q2 2021: 8,585,523 -->" \
-                               "\n| value1 = " + str(unvaccinatedPercentage) + " | color1 = #BFBFBF" \
-                                                                               "\n| label2 = Population who has received only one dose of a vaccine: " + str(
-        f'{oneDose:,}') + " people" \
-                          "\n| value2 = " + str(oneDosePercentage) + " | color2 = #42f5da" \
-                                                                     "\n| label3 = Population who has been fully vaccinated (both doses): " + str(
-        f'{secondDosesAdministered:,}') + " people" \
-                                          "\n| value3 = " + str(secondDosePercentage) + " | color3 = #008\n}}"
+    textPiechart += "\n| label1 = Unvaccinated population: ~" + str(f'{unvaccinated:,}') + \
+                    " people <!-- Quebec population estimate as of Q2 2021: 8,585,523 -->" \
+                    "\n| value1 = " + str(unvaccinatedPercentage) + " | color1 = #BFBFBF" \
+                    "\n| label2 = Population who has received only one dose of a vaccine: " + \
+                    str(f'{oneDose:,}') + " people" \
+                    "\n| value2 = " + str(oneDosePercentage) + " | color2 = #42f5da" \
+                    "\n| label3 = Population who has been fully vaccinated (both doses): " + \
+                    str(f'{secondDosesAdministered:,}') + " people" \
+                    "\n| value3 = " + str(secondDosePercentage) + " | color3 = #008\n}}"
 
     piechartFile.write(textPiechart)
 
     return populationVaccinated
 
 
-def generateInfoboxes():
+def generateAllInfoboxes():
     # Set up web scraping
-    driver = webdriver.Chrome()
-    url = "https://www.inspq.qc.ca/covid-19/donnees"
-    driver.get(url)
+    driver = openDriver("https://www.inspq.qc.ca/covid-19/donnees")
+
+    # Set up web scraping for vaccination Montreal
+    driver2 = openDriver("https://dsp-de-mtl.maps.arcgis.com/apps/dashboards/5cc9eed428cb454da09d7cde4228be92")
 
     populationVaccinated = vaccination()  # Get vaccination info
 
     try:
         time.sleep(1.5)  # Wait for the page to load completely
         soup = BeautifulSoup(driver.page_source, 'html.parser')  # Get page source
+        soup2 = BeautifulSoup(driver2.page_source, 'html.parser')  # Get page source
 
         ##########
         # QUEBEC #
@@ -171,7 +179,7 @@ def generateInfoboxes():
         # Find cases table
         table = soup.find(lambda tag: tag.name == 'table' and tag.has_attr('id') and tag['id'] == "cas_regions")
         rows = table.find_all("tr")  # Find rows
-        rowData = rows[MTL_ROW].find_all("td")  # Find data
+        rowData = rows[8].find_all("td")  # Find data
 
         mtlCases = int(rowData[1].text.replace(" ", ""))
         mtlActiveCases = int(rowData[3].text.replace(" ", ""))
@@ -183,41 +191,63 @@ def generateInfoboxes():
 
         mtlDeaths = int(re.sub(r"\s+", "", rowDataDeaths[7].text, flags=re.UNICODE))
 
+        # Get vaccination info
+        results = soup2.findAll("text")
+
+        mtlPercentageVaccinated = (results[3].text.strip())[0:-2]
+        mtlPercentageAdequatelyVaccinated = (results[5].text.strip())[0:-2]
+
+        # Get date
+        results = soup2.findAll("strong")
+        mtlDate = re.search('[0-9]{1,2}\s[A-Za-z]+\s[0-9]{4}', str(results[0])).group(0)
+        mtlDate = datetime.strptime(mtlDate, '%d %B %Y')
+        mtlDate = f'{mtlDate:%B} {mtlDate.day}, {mtlDate.year}'  # Format date
+
     finally:
         driver.quit()
+        driver2.quit()
 
     # Write to infobox file
 
     refs = ["<ref name=\"auto6\">{{Cite "
             "web|url=https://www.inspq.qc.ca/covid-19/donnees|title=Données "
-            "COVID-19 au Québec|website=INSPQ}}</ref>\n", "<ref name=\"auto6\"/>\n",
+            "COVID-19 au Québec|website=INSPQ}}</ref>\n",
+            "<ref name=\"auto6\"/>\n",
             "<ref name=\"inspqVacc\">{{cite web |title=Données de "
             "vaccination contre la COVID-19 au Québec "
             "|url=https://www.inspq.qc.ca/covid-19/donnees/vaccination "
             "|website=INSPQ |publisher=Gouvernement "
-            "|access-date=2021-03-19|language=fr}}</ref>"]
+            "|access-date=2021-03-19|language=fr}}</ref>",
+            "<ref name=\"vacc\">{{cite web |title=DATA COVID-19 VACCINATION IN MONTRÉAL "
+            "|url=https://santemontreal.qc.ca/en/public/coronavirus-covid-19/vaccination/data-vaccination/ "
+            "|website=Santé Montréal |publisher=Gouvernement du Québec}}</ref>",
+            "<ref name=\"vacc\"/>"
+            ]
 
-    textQC = "| date = " + todaysDate + "\n" \
+    # Write to QC file
+    textQC = "| date            = " + todaysDate + "\n" \
              "| confirmed_cases = " + str(f'{cases:,}') + refs[0] + \
              "| active_cases    = " + str(f'{activeCases:,}') + refs[1] + \
              "| deaths          = " + str(f'{deaths:,}') + refs[1] + \
              "| recovery_cases  = " + str(f'{recoveredCases:,}') + refs[1] + \
              "| fatality_rate   = {{Percentage|" + str(deaths) + "|" + str(cases) + \
              "|2}}\n| vaccinations    = \n*'''" + str(populationVaccinated) + \
-             "%'''  vaccinated with at least one dose <small>(" + todaysDate + \
-             ")</small>" + refs[2]
+             "%'''  vaccinated with at least one dose " + smallDate(todaysDate) + refs[2]
 
     QCFile.write(textQC)
 
-    textMTL = "| date = " + todaysDate + "\n" \
+    # Write to MTL file
+    textMTL = "| date            = " + todaysDate + "\n" \
               "| confirmed_cases = " + str(f'{mtlCases:,}') + refs[0] + \
               "| active_cases    = " + str(f'{mtlActiveCases:,}') + refs[1] + \
               "| deaths          = " + str(f'{mtlDeaths:,}') + refs[1] + \
               "| fatality_rate   = {{Percentage|" + str(mtlDeaths) + "|" + str(mtlCases) + \
-              "|2}}\n"
+              "|2}}\n| vaccinations    =\n*'''" + \
+              mtlPercentageVaccinated + "%''' vaccinated with at least one dose " + smallDate(mtlDate) + refs[3] + \
+              "\n*'''" + mtlPercentageAdequatelyVaccinated + "%''' fully vaccinated " + smallDate(mtlDate) + refs[4]
 
     MTLFile.write(textMTL)
 
 
 if __name__ == "__main__":
-    generateInfoboxes()
+    generateAllInfoboxes()
