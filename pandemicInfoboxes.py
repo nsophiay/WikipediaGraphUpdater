@@ -2,6 +2,7 @@ import os
 import time
 import re
 import traceback
+import sys
 from datetime import datetime, timedelta
 from os import path
 
@@ -88,11 +89,11 @@ def vaccination():  # Function for COVID-19 vaccination in Quebec article
 
         dosesAdministered = re.search('[0-9]{2}\s[0-9]{3}\s[0-9]{3}', str(result[3])).group(0).replace(" ", "")
         dosesAdministered = int(dosesAdministered)
-    except:
+    except Exception as e:
         print("Could not retrieve vaccination data from INSPQ")
         traceback.print_exc()
         driver.quit()
-        return
+        sys.exit()
     finally:
         driver.quit()
 
@@ -108,7 +109,7 @@ def vaccination():  # Function for COVID-19 vaccination in Quebec article
         print("Could not retrieve second dose data from covid19tracker.ca")
         traceback.print_exc()
         driver.quit()
-        return
+        sys.exit()
     finally:
         driver.quit()
 
@@ -227,7 +228,12 @@ def generateAllInfoboxes():
 
         mtlPercentageVaccinated = (results[3].text.strip())[0:-2]
         mtlPercentageAdequatelyVaccinated = (results[5].text.strip())[0:-2]
-
+    except Exception as e:
+        print("Could not retrieve case data from INSPQ")
+        traceback.print_exc()
+        driver.quit()
+        driver2.quit()
+        sys.exit()
     finally:
         driver.quit()
         driver2.quit()
