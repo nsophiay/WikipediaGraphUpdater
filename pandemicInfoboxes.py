@@ -1,11 +1,15 @@
 import os
 import time
 import re
+import traceback
 from datetime import datetime, timedelta
 from os import path
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+chrome_options = Options()
+chrome_options.add_argument("--headless")
 
 
 # Helper functions
@@ -19,7 +23,7 @@ def openFile(filePath):
 
 
 def openDriver(url):
-    driver = webdriver.Chrome()
+    driver = webdriver.Chrome(options=chrome_options)
     driver.get(url)
     return driver
 
@@ -64,6 +68,7 @@ def vaccination():  # Function for COVID-19 vaccination in Quebec article
 
     # Set up web scraping
     driver = openDriver("https://www.inspq.qc.ca/covid-19/donnees/vaccination")
+    print("Opening vaccination data...")
 
     try:
         time.sleep(1.5)  # Wait for the page to load completely
@@ -83,9 +88,27 @@ def vaccination():  # Function for COVID-19 vaccination in Quebec article
 
         dosesAdministered = re.search('[0-9]{2}\s[0-9]{3}\s[0-9]{3}', str(result[3])).group(0).replace(" ", "")
         dosesAdministered = int(dosesAdministered)
+    except:
+        print("Could not retrieve vaccination data from INSPQ")
+        traceback.print_exc()
+        driver.quit()
+        return
+    finally:
+        driver.quit()
 
-        secondDosesAdministered = re.search('[0-9]{1}\s[0-9]{3}\s[0-9]{3}', str(result[4])).group(0).replace(" ", "")
-        secondDosesAdministered = int(secondDosesAdministered)
+    # Get second dose administered data (no longer available on INSPQ page)
+    driver = openDriver("https://covid19tracker.ca/provincevac.html?p=QC")
+    try:
+        time.sleep(1.5)  # Wait for the page to load completely
+        soup = BeautifulSoup(driver.page_source, 'html.parser')  # Get page source
+
+        secondDosesAdministered = soup.find(id="updateTwoDoses")  # Get number
+        secondDosesAdministered = int(secondDosesAdministered.text.replace(",", ""))  # Convert to int
+    except Exception as e:
+        print("Could not retrieve second dose data from covid19tracker.ca")
+        traceback.print_exc()
+        driver.quit()
+        return
     finally:
         driver.quit()
 
@@ -148,9 +171,11 @@ def vaccination():  # Function for COVID-19 vaccination in Quebec article
 def generateAllInfoboxes():
     # Set up web scraping
     driver = openDriver("https://www.inspq.qc.ca/covid-19/donnees")
+    print("Opening Quebec case data...")
 
     # Set up web scraping for vaccination Montreal
     driver2 = openDriver("https://dsp-de-mtl.maps.arcgis.com/apps/dashboards/5cc9eed428cb454da09d7cde4228be92")
+    print("Opening Montreal case data...")
 
     populationVaccinated = vaccination()  # Get vaccination info
 
@@ -247,6 +272,7 @@ def generateAllInfoboxes():
               "\n*'''" + mtlPercentageAdequatelyVaccinated + "%''' fully vaccinated " + smallDate(mtlDate) + refs[4]
 
     MTLFile.write(textMTL)
+
 
 if __name__ == "__main__":
     generateAllInfoboxes()
