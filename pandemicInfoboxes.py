@@ -1,7 +1,7 @@
 import os
 import time
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from os import path
 
 from bs4 import BeautifulSoup
@@ -31,6 +31,9 @@ def smallDate(date):
 # Variables
 
 todaysDate = datetime.now()
+offset = (todaysDate.weekday() - 1) % 7
+mtlDate = todaysDate - timedelta(days=offset)
+mtlDate = f'{mtlDate:%B} {mtlDate.day}, {mtlDate.year}'  # Format date
 todaysDate = f'{todaysDate:%B} {todaysDate.day}, {todaysDate.year}'
 
 # Check if folder for files exists. If not, create it
@@ -94,23 +97,25 @@ def vaccination():  # Function for COVID-19 vaccination in Quebec article
             ]
 
     # Write to infobox file
-    
+
     smallTodaysDate = smallDate(todaysDate)
 
     textInfobox += str(f'{dosesAdministered:,}') + "''' doses administered  " + smallTodaysDate + refs[0] + "\n" \
-        "<br>'''" + str(f'{secondDosesAdministered:,}') + \
-        "''' second doses administered " + smallTodaysDate + refs[1] + \
-        "\n| outcome                  = '''" + str(populationVaccinated) + \
-        "%''' of the population has received at least one dose of a vaccine " + smallTodaysDate + refs[1] + \
-        "<br>'''" + str(eligiblePopulationVaccinated) + "%''' of the population " \
-        "≥12 years old is \"adequately vaccinated\"" \
-        "{{efn|The Quebec government defines an \"adequately vaccinated\" person" \
-        "as someone who has either received two doses of a vaccine or one dose of a" \
-        "vaccine if they have already had COVID-19}} " + smallTodaysDate + refs[1] + "\n" \
-        "|organizers               = - [[Health Canada]]<br>- [[Public Health Agency of " \
-        "Canada]]<br>- [[Quebec|Quebec government]]<br>- [[Municipal government in Canada]]\n" \
-        "| website                  = [https://www.quebec.ca/en/health/health-issues/a-z/2019-coronavirus" \
-        "/situation-coronavirus-in-quebec/covid-19-vaccination-data Government of Quebec]\n}} "
+                                                                                                            "<br>'''" + str(
+        f'{secondDosesAdministered:,}') + \
+                   "''' second doses administered " + smallTodaysDate + refs[1] + \
+                   "\n| outcome                  = '''" + str(populationVaccinated) + \
+                   "%''' of the population has received at least one dose of a vaccine " + smallTodaysDate + refs[1] + \
+                   "<br>'''" + str(eligiblePopulationVaccinated) + "%''' of the population " \
+                                                                   "≥12 years old is \"adequately vaccinated\"" \
+                                                                   "{{efn|The Quebec government defines an \"adequately vaccinated\" person " \
+                                                                   "as someone who has either received two doses of a vaccine or one dose of a" \
+                                                                   " vaccine if they have already had COVID-19}} " + smallTodaysDate + \
+                   refs[1] + "\n" \
+                             "|organizers               = - [[Health Canada]]<br>- [[Public Health Agency of " \
+                             "Canada]]<br>- [[Quebec|Quebec government]]<br>- [[Municipal government in Canada]]\n" \
+                             "| website                  = [https://www.quebec.ca/en/health/health-issues/a-z/2019-coronavirus" \
+                             "/situation-coronavirus-in-quebec/covid-19-vaccination-data Government of Quebec]\n}} "
 
     infoboxFile.write(textInfobox)
 
@@ -127,12 +132,13 @@ def vaccination():  # Function for COVID-19 vaccination in Quebec article
     textPiechart += "\n| label1 = Unvaccinated population: ~" + str(f'{unvaccinated:,}') + \
                     " people <!-- Quebec population estimate as of Q2 2021: 8,585,523 -->" \
                     "\n| value1 = " + str(unvaccinatedPercentage) + " | color1 = #BFBFBF" \
-                    "\n| label2 = Population who has received only one dose of a vaccine: " + \
+                                                                    "\n| label2 = Population who has received only one dose of a vaccine: " + \
                     str(f'{oneDose:,}') + " people" \
-                    "\n| value2 = " + str(oneDosePercentage) + " | color2 = #42f5da" \
-                    "\n| label3 = Population who has been fully vaccinated (both doses): " + \
+                                          "\n| value2 = " + str(oneDosePercentage) + " | color2 = #42f5da" \
+                                                                                     "\n| label3 = Population who has been fully vaccinated (both doses): " + \
                     str(f'{secondDosesAdministered:,}') + " people" \
-                    "\n| value3 = " + str(secondDosePercentage) + " | color3 = #008\n}}"
+                                                          "\n| value3 = " + str(
+        secondDosePercentage) + " | color3 = #008\n}}"
 
     piechartFile.write(textPiechart)
 
@@ -197,12 +203,6 @@ def generateAllInfoboxes():
         mtlPercentageVaccinated = (results[3].text.strip())[0:-2]
         mtlPercentageAdequatelyVaccinated = (results[5].text.strip())[0:-2]
 
-        # Get date
-        results = soup2.findAll("strong")
-        mtlDate = re.search('[0-9]{1,2}\s[A-Za-z]+\s[0-9]{4}', str(results[0])).group(0)
-        mtlDate = datetime.strptime(mtlDate, '%d %B %Y')
-        mtlDate = f'{mtlDate:%B} {mtlDate.day}, {mtlDate.year}'  # Format date
-
     finally:
         driver.quit()
         driver2.quit()
@@ -226,7 +226,7 @@ def generateAllInfoboxes():
 
     # Write to QC file
     textQC = "| date            = " + todaysDate + "\n" \
-             "| confirmed_cases = " + str(f'{cases:,}') + refs[0] + \
+                                                   "| confirmed_cases = " + str(f'{cases:,}') + refs[0] + \
              "| active_cases    = " + str(f'{activeCases:,}') + refs[1] + \
              "| deaths          = " + str(f'{deaths:,}') + refs[1] + \
              "| recovery_cases  = " + str(f'{recoveredCases:,}') + refs[1] + \
@@ -238,7 +238,7 @@ def generateAllInfoboxes():
 
     # Write to MTL file
     textMTL = "| date            = " + todaysDate + "\n" \
-              "| confirmed_cases = " + str(f'{mtlCases:,}') + refs[0] + \
+                                                    "| confirmed_cases = " + str(f'{mtlCases:,}') + refs[0] + \
               "| active_cases    = " + str(f'{mtlActiveCases:,}') + refs[1] + \
               "| deaths          = " + str(f'{mtlDeaths:,}') + refs[1] + \
               "| fatality_rate   = {{Percentage|" + str(mtlDeaths) + "|" + str(mtlCases) + \
@@ -247,7 +247,6 @@ def generateAllInfoboxes():
               "\n*'''" + mtlPercentageAdequatelyVaccinated + "%''' fully vaccinated " + smallDate(mtlDate) + refs[4]
 
     MTLFile.write(textMTL)
-
 
 if __name__ == "__main__":
     generateAllInfoboxes()
