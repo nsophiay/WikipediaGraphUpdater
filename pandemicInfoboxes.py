@@ -3,6 +3,7 @@ import time
 import re
 import traceback
 import sys
+import threading
 from datetime import datetime, timedelta
 from os import path
 
@@ -178,10 +179,11 @@ def generateAllInfoboxes():
     driver2 = openDriver("https://dsp-de-mtl.maps.arcgis.com/apps/dashboards/5cc9eed428cb454da09d7cde4228be92")
     print("Opening Montreal case data...")
 
-    populationVaccinated = vaccination()  # Get vaccination info
+    populationVaccinated = threading.Thread(target=vaccination, args=(), daemon=True)
+    populationVaccinated.start()
 
     try:
-        time.sleep(1.5)  # Wait for the page to load completely
+        time.sleep(2.5)  # Wait for the page to load completely
         soup = BeautifulSoup(driver.page_source, 'html.parser')  # Get page source
         soup2 = BeautifulSoup(driver2.page_source, 'html.parser')  # Get page source
 
