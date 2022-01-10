@@ -143,6 +143,7 @@ def vaccination():  # Function for COVID-19 vaccination in Quebec article
                              "/situation-coronavirus-in-quebec/covid-19-vaccination-data Government of Quebec]\n}} "
 
     infoboxFile.write(textInfobox)
+    infoboxFile.close()
 
     # Calculations for piechart
 
@@ -166,6 +167,7 @@ def vaccination():  # Function for COVID-19 vaccination in Quebec article
         secondDosePercentage) + " | color3 = #008\n}}"
 
     piechartFile.write(textPiechart)
+    piechartFile.close()
 
     return populationVaccinated
 
@@ -179,8 +181,10 @@ def generateAllInfoboxes():
     driver2 = openDriver("https://dsp-de-mtl.maps.arcgis.com/apps/dashboards/5cc9eed428cb454da09d7cde4228be92")
     print("Opening Montreal case data...")
 
-    populationVaccinated = threading.Thread(target=vaccination, args=(), daemon=True)
-    populationVaccinated.start()
+    #populationVaccinated = threading.Thread(target=vaccination, args=(), daemon=True)
+    #populationVaccinated.start()
+
+    populationVaccinated = vaccination()
 
     try:
         time.sleep(3.0)  # Wait for the page to load completely
@@ -268,6 +272,7 @@ def generateAllInfoboxes():
              "%'''  vaccinated with at least one dose " + smallDate(todaysDate) + refs[2]
 
     QCFile.write(textQC)
+    QCFile.close()
 
     # Write to MTL file
     textMTL = "| date            = " + todaysDate + "\n" \
@@ -280,6 +285,7 @@ def generateAllInfoboxes():
               "\n*'''" + mtlPercentageAdequatelyVaccinated + "%''' fully vaccinated " + smallDate(mtlDate) + refs[4]
 
     MTLFile.write(textMTL)
+    MTLFile.close()
 
 
 if __name__ == "__main__":
