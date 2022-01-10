@@ -183,7 +183,7 @@ def generateAllInfoboxes():
     populationVaccinated.start()
 
     try:
-        time.sleep(2.5)  # Wait for the page to load completely
+        time.sleep(3.0)  # Wait for the page to load completely
         soup = BeautifulSoup(driver.page_source, 'html.parser')  # Get page source
         soup2 = BeautifulSoup(driver2.page_source, 'html.parser')  # Get page source
 
