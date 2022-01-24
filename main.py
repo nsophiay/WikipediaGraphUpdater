@@ -244,11 +244,12 @@ def vaccinations():
                            "| xAxisFormat=%Y-%m\n",
                            "| yGrid= 1\n",
                            "| xGrid= 1\n",
-                           "| colors= #72B8B1, #196165, #929292,\n",
+                           "| colors= #72B8B1, #3b94a8, #196165, #929292,\n",
                            "| legend=Legend\n",
                            "| y1Title=1st dose\n",
                            "| y2Title=2nd dose\n",
-                           "| y3Title= Total\n",
+                           "| y3Title=3rd dose\n",
+                           "| y4Title= Total\n",
                            "| yAxisTitle = Number of doses\n",
                            "| x="
                            ])
@@ -263,11 +264,12 @@ def vaccinations():
                            "| xAxisFormat=%Y-%m\n",
                            "| yGrid= 1\n",
                            "| xGrid= 1\n",
-                           "| colors= #72B8B1, #196165, #929292\n",
+                           "| colors= #72B8B1, #3b94a8, #196165, #929292\n",
                            "| legend=Legend\n",
                            "| y1Title=1st dose\n",
                            "| y2Title=2nd dose\n",
-                           "| y3Title= Total\n",
+                           "| y3Title=3rd dose\n",
+                           "| y4Title= Total\n",
                            "| yAxisTitle = Cumulative number of doses\n",
                            "| x="
                            ])
@@ -281,10 +283,11 @@ def vaccinations():
                            "| xAxisFormat=%Y-%m\n",
                            "| yGrid= 1\n",
                            "| xGrid= 1\n",
-                           "| colors= #72B8B1, #196165, #929292\n",
+                           "| colors= #72B8B1, #196165, #0055ff\n",
                            "| legend=Legend\n",
                            "| y1Title=1st dose\n",
                            "| y2Title=2nd dose\n",
+     #                     "| y3Title=3rd dose\n",
                            "| yAxisTitle =  Percentage of the population vaccinated (%)\n",
                            "| x="
                            ])
@@ -293,14 +296,17 @@ def vaccinations():
 
     dailyDoses1st = []
     dailyDoses2nd = []
+    dailyDoses3rd = []
     dailyDosesTotal = []
 
     totalDoses1st = []
     totalDoses2nd = []
+    totalDoses3rd = []
     totalDosesTotal = []
 
     percentage1st = []
     percentage2nd = []
+    # percentage3rd = []
 
     # Parse file
     for x in vaccinationsCSV:
@@ -314,14 +320,16 @@ def vaccinations():
 
             dailyDoses1st.append(line[4])
             dailyDoses2nd.append(line[5])
-            dailyDosesTotal.append(line[8])
+            dailyDoses3rd.append(line[6])
+            dailyDosesTotal.append(line[10])
 
-            totalDoses1st.append(line[6])
-            totalDoses2nd.append(line[7])
-            totalDosesTotal.append(line[9])
+            totalDoses1st.append(line[7])
+            totalDoses2nd.append(line[8])
+            totalDoses3rd.append(line[9])
+            totalDosesTotal.append(line[11])
 
-            percentage1st.append(line[10])
-            percentage2nd.append(line[11])
+            percentage1st.append(line[12])
+            percentage2nd.append(line[13])
 
     dailyDoses = open(DailyDoses, "a")
 
@@ -337,6 +345,10 @@ def vaccinations():
         dailyDoses.write(str(x) + ",")
 
     dailyDoses.writelines(["\n|y3="])
+    for x in dailyDoses3rd:
+        dailyDoses.write(str(x) + ",")
+
+    dailyDoses.writelines(["\n|y4="])
     for x in dailyDosesTotal:
         dailyDoses.write(str(x) + ",")
 
@@ -353,17 +365,18 @@ def vaccinations():
         totalDoses.write(x + ",")
 
     totalDoses.writelines(["\n|y1="])
-
     for x in totalDoses1st:
         totalDoses.write(str(x) + ",")
 
     totalDoses.writelines(["\n|y2="])
-
     for x in totalDoses2nd:
         totalDoses.write(str(x) + ",")
 
     totalDoses.writelines(["\n|y3="])
+    for x in totalDoses3rd:
+        totalDoses.write(str(x) + ",")
 
+    totalDoses.writelines(["\n|y4="])
     for x in totalDosesTotal:
         totalDoses.write(str(x) + ",")
 

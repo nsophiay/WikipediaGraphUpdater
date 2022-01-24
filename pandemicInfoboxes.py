@@ -73,7 +73,7 @@ def vaccination():  # Function for COVID-19 vaccination in Quebec article
     print("Opening vaccination data...")
 
     try:
-        time.sleep(1.5)  # Wait for the page to load completely
+        time.sleep(2.5)  # Wait for the page to load completely
         soup = BeautifulSoup(driver.page_source, 'html.parser')  # Get page source
 
         result = soup.findAll("span", class_="chiffres")  # Get numbers from INSPQ
@@ -195,19 +195,20 @@ def generateAllInfoboxes():
         # QUEBEC #
         ##########
 
-        result = soup.findAll("span", class_="chiffres")  # Get numbers from INSPQ
-
         # Extract and format numbers
-        cases = re.search('[0-9]{3}\s[0-9]{3}', str(result[0])).group(0)
+        cases = soup.find("span", id="cas").text
+        cases = re.search('^[0-9\\s]*', cases).group(0)
         cases = int(cases.replace(" ", ""))
 
-        activeCases = re.search('[0-9]\s[0-9]{3}', str(result[1])).group(0)
+        activeCases = soup.find("span", id="cas-actifs").text
         activeCases = int(activeCases.replace(" ", ""))
 
-        recoveredCases = re.search('[0-9]{3}\s[0-9]{3}', str(result[2])).group(0)
+        recoveredCases = soup.find("span", id="gueris").text
+        recoveredCases = re.search('^[0-9\\s]*', recoveredCases).group(0)
         recoveredCases = int(recoveredCases.replace(" ", ""))
 
-        deaths = re.search('[0-9]{2}\s[0-9]{3}', str(result[3])).group(0)
+        deaths = soup.find("span", id="deces").text
+        deaths = re.search('^[0-9\\s]*', deaths).group(0)
         deaths = int(deaths.replace(" ", ""))
 
         ############
@@ -235,7 +236,7 @@ def generateAllInfoboxes():
         mtlPercentageVaccinated = (results[3].text.strip())[0:-2]
         mtlPercentageAdequatelyVaccinated = (results[5].text.strip())[0:-2]
     except Exception as e:
-        print("Could not retrieve case data from INSPQ")
+        print("\n---------------------------------\nCould not retrieve case data from INSPQ. Try running again.\n---------------------------------")
         traceback.print_exc()
         driver.quit()
         driver2.quit()
