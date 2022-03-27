@@ -529,6 +529,8 @@ def northernCanada():
                 newCasesNU.append(0)
             continue
 
+        isWeekday = dateCurrent.weekday() < 5
+
         if line[3] != dateCurrent.strftime("%Y-%m-%d"):
             dates.append(dateCurrent.strftime("%Y-%m-%d"))
             dateA = datetime.datetime.strptime(line[3], "%Y-%m-%d")
@@ -536,20 +538,21 @@ def northernCanada():
             for l in range(difference):
                 dateCurrent += datetime.timedelta(days=1)  # Increment day
                 dates.append(dateCurrent.strftime("%Y-%m-%d"))
-                newCasesNT.append(0)
-                newCasesYK.append(0)
-                newCasesNU.append(0)
+                if isWeekday:
+                    newCasesNT.append(0)
+                    newCasesYK.append(0)
+                    newCasesNU.append(0)
 
         # Add provincial data
-        if line[3] == dateCurrent.strftime("%Y-%m-%d") and province == 'Yukon':
+        if line[3] == dateCurrent.strftime("%Y-%m-%d") and province == 'Yukon' and isWeekday:
             provinceFlags[0] = 1
             newCasesYK.append(int(line[15]))
 
-        if line[3] == dateCurrent.strftime("%Y-%m-%d") and province == 'Northwest Territories':
+        if line[3] == dateCurrent.strftime("%Y-%m-%d") and province == 'Northwest Territories' and isWeekday:
             provinceFlags[1] = 1
             newCasesNT.append(int(line[15]))
 
-        if line[3] == dateCurrent.strftime("%Y-%m-%d") and province == 'Nunavut':
+        if line[3] == dateCurrent.strftime("%Y-%m-%d") and province == 'Nunavut' and isWeekday:
             provinceFlags[2] = 1
             newCasesNU.append(int(line[15]))
 

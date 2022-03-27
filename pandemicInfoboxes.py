@@ -10,6 +10,7 @@ from os import path
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 
@@ -36,9 +37,16 @@ def smallDate(date):
 
 # Variables
 
-todaysDate = datetime.now()
-offset = (todaysDate.weekday() - 1) % 7
-mtlDate = todaysDate - timedelta(days=offset)
+# If running program on a weekend, set date to the last Friday
+if datetime.now().weekday() == 5:
+    todaysDate = datetime.now() - timedelta(days=1)
+elif datetime.now().weekday() == 6:
+    todaysDate = datetime.now() - timedelta(days=2)
+else:  # Otherwise set to today's date
+    todaysDate = datetime.now()
+
+offset = (datetime.now().weekday() - 1) % 7
+mtlDate = datetime.now() - timedelta(days=offset)
 mtlDate = f'{mtlDate:%B} {mtlDate.day}, {mtlDate.year}'  # Format date
 todaysDate = f'{todaysDate:%B} {todaysDate.day}, {todaysDate.year}'
 
@@ -181,8 +189,8 @@ def generateAllInfoboxes():
     driver2 = openDriver("https://dsp-de-mtl.maps.arcgis.com/apps/dashboards/5cc9eed428cb454da09d7cde4228be92")
     print("Opening Montreal case data...")
 
-    #populationVaccinated = threading.Thread(target=vaccination, args=(), daemon=True)
-    #populationVaccinated.start()
+    # populationVaccinated = threading.Thread(target=vaccination, args=(), daemon=True)
+    # populationVaccinated.start()
 
     populationVaccinated = vaccination()
 
@@ -236,7 +244,8 @@ def generateAllInfoboxes():
         mtlPercentageVaccinated = (results[3].text.strip())[0:-2]
         mtlPercentageAdequatelyVaccinated = (results[5].text.strip())[0:-2]
     except Exception as e:
-        print("\n---------------------------------\nCould not retrieve case data from INSPQ. Try running again.\n---------------------------------")
+        print(
+            "\n---------------------------------\nCould not retrieve case data from INSPQ. Try running again.\n---------------------------------")
         traceback.print_exc()
         driver.quit()
         driver2.quit()
@@ -265,7 +274,10 @@ def generateAllInfoboxes():
     # Write to QC file
     textQC = "| date            = " + todaysDate + "\n" \
                                                    "| confirmed_cases = " + str(f'{cases:,}') + refs[0] + \
-             "| active_cases    = " + str(f'{activeCases:,}') + refs[1] + \
+             "| active_cases    = " + str(f'{activeCases:,}') + "{{efn|This figure may not represent the current " \
+                                                                "epidemiological situation — the Quebec government " \
+                                                                "restricted PCR COVID-19 tests to certain vulnerable " \
+                                                                "groups on January 4, 2022.}}" + refs[1] + \
              "| deaths          = " + str(f'{deaths:,}') + refs[1] + \
              "| recovery_cases  = " + str(f'{recoveredCases:,}') + refs[1] + \
              "| fatality_rate   = {{Percentage|" + str(deaths) + "|" + str(cases) + \
