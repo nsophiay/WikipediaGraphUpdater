@@ -10,10 +10,22 @@ from os import path
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from fake_useragent import UserAgent
 
 chrome_options = Options()
 chrome_options.add_argument("--headless")
+chrome_options.add_argument("--incognito")
+chrome_options.add_argument("--nogpu")
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--window-size=1280,1280")
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--enable-javascript")
+chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+chrome_options.add_experimental_option('useAutomationExtension', False)
+chrome_options.add_argument('--disable-blink-features=AutomationControlled')
 
+ua = UserAgent()
+userAgent = ua.random
 
 # Helper functions
 
@@ -27,6 +39,8 @@ def openFile(filePath):
 
 def openDriver(url):
     driver = webdriver.Chrome(options=chrome_options)
+    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+    driver.execute_cdp_cmd('Network.setUserAgentOverride', {"userAgent": userAgent})
     driver.get(url)
     return driver
 
@@ -81,13 +95,13 @@ def vaccination():  # Function for COVID-19 vaccination in Quebec article
     print("Opening vaccination data...")
 
     try:
-        time.sleep(2.5)  # Wait for the page to load completely
+        time.sleep(1.5)  # Wait for the page to load completely
         soup = BeautifulSoup(driver.page_source, 'html.parser')  # Get page source
 
         result = soup.findAll("span", class_="chiffres")  # Get numbers from INSPQ
 
         # Extract and format numbers
-        populationVaccinated = re.search('[0-9]{2}.[0-9]+', str(result[0]).replace(",", ".")).group(0)
+        populationVaccinated = soup.find("span", id="popVacc").text.replace(",", ".")
         populationVaccinated = float(populationVaccinated)
 
         eligiblePopulationVaccinated = re.search('[0-9]{2}.[0-9]+', str(result[1]).replace(",", ".")).group(0)
