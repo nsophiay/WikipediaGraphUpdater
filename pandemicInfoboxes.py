@@ -98,19 +98,18 @@ def vaccination():  # Function for COVID-19 vaccination in Quebec article
         time.sleep(1.5)  # Wait for the page to load completely
         soup = BeautifulSoup(driver.page_source, 'html.parser')  # Get page source
 
-        result = soup.findAll("span", class_="chiffres")  # Get numbers from INSPQ
-
         # Extract and format numbers
         populationVaccinated = soup.find("span", id="popVacc").text.replace(",", ".")
         populationVaccinated = float(populationVaccinated)
 
-        eligiblePopulationVaccinated = re.search('[0-9]{2}.[0-9]+', str(result[1]).replace(",", ".")).group(0)
+        eligiblePopulationVaccinated = soup.find("span", id="popVacc12").text.replace(",", ".")
         eligiblePopulationVaccinated = float(eligiblePopulationVaccinated)
 
-        adequatelyVaccinated = re.search('[0-9]{2}.[0-9]+', str(result[2]).replace(",", ".")).group(0)
+        adequatelyVaccinated = soup.find("span", id="popAdVacc").text.replace(",", ".")
         adequatelyVaccinated = float(adequatelyVaccinated)
 
-        dosesAdministered = re.search('[0-9]{2}\s[0-9]{3}\s[0-9]{3}', str(result[3])).group(0).replace(" ", "")
+        dosesAdministered = soup.find("span", id="dosesAdmin").text.replace(" ", "")
+        dosesAdministered = dosesAdministered[:dosesAdministered.find('(')]
         dosesAdministered = int(dosesAdministered)
     except Exception as e:
         print("Could not retrieve vaccination data from INSPQ")
