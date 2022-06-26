@@ -56,6 +56,7 @@ totalDoses2nd = []
 totalDoses3rd = []
 totalDosesTotal = []
 
+
 # Helper function to compute the average of a list
 def computeAverage(lst):
     return sum(lst) / len(lst)
@@ -137,12 +138,13 @@ def readCSV(csv):
         elif deathsFlag and (line[2] == "RSS06"):
             deathsMTL.append(int(line[18]))
 
+
 def montreal():
     montrealGraphs()
     montrealInfobox()
 
-def montrealGraphs():
 
+def montrealGraphs():
     if not path.exists("Files_Montreal"):  # Check if folder exists. If not, create it
         os.makedirs("Files_Montreal")
 
@@ -181,8 +183,8 @@ def montrealGraphs():
                               "<!-- Note that you should check numbers a few days back since numbers in the last few days might be increased -->"])
     montrealCases.close()
 
-def montrealInfobox():
 
+def montrealInfobox():
     MTLPathName = "infoboxes/MontrealInfobox.txt"
     MTLFile = openFile(MTLPathName)
 
@@ -198,7 +200,8 @@ def montrealInfobox():
     confirmedCases = createAttribute("confirmed_cases", f'{casesMTL[-1]:,}{ref}')
     activeCase = createAttribute("active_cases", f'{activeCasesMTL[-1]:,}{efn}{mainRef}')
     death = createAttribute("deaths", f'{deathsMTL[-1]:,}{mainRef}')
-    fatalityRate = createAttribute("fatality_rate","{{Percentage|" + str(deathsMTL[-1]) + "|" + str(casesMTL[-1]) + "|2}}")
+    fatalityRate = createAttribute("fatality_rate",
+                                   "{{Percentage|" + str(deathsMTL[-1]) + "|" + str(casesMTL[-1]) + "|2}}")
 
     currentDate = datetime.strptime(dateVaccination[-1], '%Y-%m-%d')
     currentDate = datetime.strftime(currentDate, '%B %d, %Y')
@@ -206,7 +209,7 @@ def montrealInfobox():
 
     firstDose = f"\n*'''{float(percentage1stMTL[-1]):.1f}%''' vaccinated with at least one dose {currentDate}{mainRef}"
     secondDose = f"\n*'''{float(percentage2ndMTL[-1]):.1f}%''' fully vaccinated {currentDate}{mainRef}"
-    vax = createAttribute("vaccinations",firstDose+secondDose)
+    vax = createAttribute("vaccinations", firstDose + secondDose)
 
     infobox = [date, confirmedCases, activeCase, death, fatalityRate, vax]
 
@@ -413,12 +416,11 @@ def vaccinationGraphs(vaccinationsCSV):
                            "| xAxisFormat=%Y-%m\n",
                            "| yGrid= 1\n",
                            "| xGrid= 1\n",
-                           "| colors= #72B8B1, #3b94a8, #196165, #929292,\n",
+                           "| colors= #72B8B1, #3b94a8, #196165\n",
                            "| legend=Legend\n",
                            "| y1Title=1st dose\n",
                            "| y2Title=2nd dose\n",
                            "| y3Title=3rd dose\n",
-                           "| y4Title= Total\n",
                            "| yAxisTitle = Number of doses\n",
                            "| x="
                            ])
@@ -502,10 +504,6 @@ def vaccinationGraphs(vaccinationsCSV):
 
     dailyDoses.writelines(["\n|y3="])
     for x in dailyDoses3rd:
-        dailyDoses.write(str(x) + ",")
-
-    dailyDoses.writelines(["\n|y4="])
-    for x in dailyDosesTotal:
         dailyDoses.write(str(x) + ",")
 
     dailyDoses.writelines(["\n}}\n",
