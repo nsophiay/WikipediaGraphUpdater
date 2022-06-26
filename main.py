@@ -18,18 +18,34 @@ offset = (datetime.now().weekday() - 1) % 7
 mtlDate = datetime.now() - timedelta(days=offset)
 mtlDate = f'{mtlDate:%B} {mtlDate.day}, {mtlDate.year}'  # Format date
 todaysDate = f'{todaysDate:%B} {todaysDate.day}, {todaysDate.year}'
+mainRef = "<ref name=\"auto6\"/>"
 
 # Figure out how better to do this later
 dates = []
+
 cases = []
+casesMTL = []
+
 activeCases = []
-dateDeaths = []
+activeCasesMTL = []
+
 newCases = []
+newCasesMTL = []
+
+dateDeaths = []
 deaths = []
-hospitalizations = []
 deathsTotal = []
+deathsMTL = []
+
+hospitalizations = []
+
 percentage1st = []
+percentage1stMTL = []
+percentage2nd = []
+percentage2ndMTL = []
+
 dateVaccination = []
+
 dailyDoses1st = []
 dailyDoses2nd = []
 dailyDoses3rd = []
@@ -39,9 +55,6 @@ totalDoses1st = []
 totalDoses2nd = []
 totalDoses3rd = []
 totalDosesTotal = []
-
-percentage2nd = []
-
 
 # Helper function to compute the average of a list
 def computeAverage(lst):
@@ -109,6 +122,10 @@ def readCSV(csv):
             newCases.append(int(line[11]))  # Add new cases into array
             cases.append(int(line[6]))
             activeCases.append(int(line[12]))
+        elif casesFlag and (line[2] == "RSS06"):
+            newCasesMTL.append(int(line[11]))  # Add new cases into array
+            casesMTL.append(int(line[6]))
+            activeCasesMTL.append(int(line[12]))
 
         if hospitalizationsFlag and (line[2] == "RSS99") and line[44] != '.':
             hospitalizations.append(int(line[44]))
@@ -117,13 +134,14 @@ def readCSV(csv):
             dateDeaths.append(line[0])  # Add dates into array
             deaths.append(line[25])  # Add deaths into array
             deathsTotal.append(int(line[18]))
-
+        elif deathsFlag and (line[2] == "RSS06"):
+            deathsMTL.append(int(line[18]))
 
 def montreal():
-    downloadCSV('https://santemontreal.qc.ca/fileadmin/fichiers/Campagnes/coronavirus/situation-montreal/courbe.csv',
-                "courbe.csv")
-    montrealCasesCSV = open("courbe.csv", "r")
-    montrealCasesCSV.readline()  # Skip first line
+    montrealGraphs()
+    montrealInfobox()
+
+def montrealGraphs():
 
     if not path.exists("Files_Montreal"):  # Check if folder exists. If not, create it
         os.makedirs("Files_Montreal")
@@ -147,28 +165,14 @@ def montreal():
                               "|type=line\n",
                               "|x = "])
 
-    date = []
-    newCases = []
-    totalCases = []
-
-    # Parse file
-    for x in montrealCasesCSV:
-        line = re.split(';', x)
-        if not line[0]:
-            break
-        # Gather data
-        date.append(line[0])
-        newCases.append(line[1])
-        totalCases.append(line[2])
-
     # Write to file
     montrealCases = open(MontrealNewCases, "a")
-    for x in date:
+    for x in dates:
         montrealCases.write(x + ",")
 
     montrealCases.writelines(["\n|yAxisTitle=New Cases\n", "|y1="])
-    for x in newCases:
-        montrealCases.write(x + ",")
+    for x in newCasesMTL:
+        montrealCases.write(f"{x},")
 
     montrealCases.writelines(["\n\n|y1Title=New cases per day\n",
                               "|yGrid= |xGrid=\n",
@@ -176,6 +180,42 @@ def montreal():
                               "<!-- https://santemontreal.qc.ca/en/public/coronavirus-covid-19/situation-of-the-coronavirus-covid-19-in-montreal/#c43710 -->\n",
                               "<!-- Note that you should check numbers a few days back since numbers in the last few days might be increased -->"])
     montrealCases.close()
+
+def montrealInfobox():
+
+    MTLPathName = "infoboxes/MontrealInfobox.txt"
+    MTLFile = openFile(MTLPathName)
+
+    ref = "<ref name=\"auto6\">{{Cite web|url=https://www.inspq.qc.ca/covid-19/donnees|title=Données COVID-19 au Québec|website=INSPQ}}</ref>"
+
+    efn = "{{efn|This figure may not represent the current epidemiological situation — the Quebec government " \
+          "restricted PCR COVID-19 tests to certain vulnerable groups on January 4, 2022.}} "
+
+    currentDate = datetime.strptime(dates[-1], '%Y-%m-%d')
+    currentDate = datetime.strftime(currentDate, '%B %d, %Y')
+
+    date = createAttribute("date", currentDate)
+    confirmedCases = createAttribute("confirmed_cases", f'{casesMTL[-1]:,}{ref}')
+    activeCase = createAttribute("active_cases", f'{activeCasesMTL[-1]:,}{efn}{mainRef}')
+    death = createAttribute("deaths", f'{deathsMTL[-1]:,}{mainRef}')
+    fatalityRate = createAttribute("fatality_rate","{{Percentage|" + str(deathsMTL[-1]) + "|" + str(casesMTL[-1]) + "|2}}")
+
+    currentDate = datetime.strptime(dateVaccination[-1], '%Y-%m-%d')
+    currentDate = datetime.strftime(currentDate, '%B %d, %Y')
+    currentDate = smallDate(currentDate)
+
+    firstDose = f"\n*'''{float(percentage1stMTL[-1]):.1f}%''' vaccinated with at least one dose {currentDate}{mainRef}"
+    secondDose = f"\n*'''{float(percentage2ndMTL[-1]):.1f}%''' fully vaccinated {currentDate}{mainRef}"
+    vax = createAttribute("vaccinations",firstDose+secondDose)
+
+    infobox = [date, confirmedCases, activeCase, death, fatalityRate, vax]
+
+    text = ""
+    for attribute in infobox:
+        text += f"| {attribute['name']}          = {attribute['value']}\n"
+
+    MTLFile.write(text)
+    MTLFile.close()
 
 
 def quebec():
@@ -290,11 +330,7 @@ def quebecInfobox(csv):
             "vaccination contre la COVID-19 au Québec "
             "|url=https://www.inspq.qc.ca/covid-19/donnees/vaccination "
             "|website=INSPQ |publisher=Gouvernement "
-            "|access-date=2021-03-19|language=fr}}</ref>",
-            "<ref name=\"vacc\">{{cite web |title=DATA COVID-19 VACCINATION IN MONTRÉAL "
-            "|url=https://santemontreal.qc.ca/en/public/coronavirus-covid-19/vaccination/data-vaccination/ "
-            "|website=Santé Montréal |publisher=Gouvernement du Québec}}</ref>",
-            "<ref name=\"vacc\"/>"
+            "|access-date=2021-03-19|language=fr}}</ref>"
             ]
 
     QCPathName = "infoboxes/QuebecInfobox.txt"
@@ -447,6 +483,9 @@ def vaccinationGraphs(vaccinationsCSV):
 
             percentage1st.append(line[14])
             percentage2nd.append(line[15])
+        if line[2] == 'RSS06':
+            percentage1stMTL.append(line[14])
+            percentage2ndMTL.append(line[15])
 
     dailyDoses = open(DailyDoses, "a")
 
@@ -601,5 +640,5 @@ def vaccinationPiechart():
 if __name__ == "__main__":
     # Generate all files
     vaccination()
-    montreal()
     quebec()
+    montreal()
