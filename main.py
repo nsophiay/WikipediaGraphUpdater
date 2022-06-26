@@ -2,25 +2,14 @@ import requests
 import re
 from os import path
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 
+####################
+# Global variables #
+####################
 fileDir = os.path.dirname(os.path.realpath('__file__'))
-
-# If running program on a weekend, set date to the last Friday
-if datetime.now().weekday() == 5:
-    todaysDate = datetime.now() - timedelta(days=1)
-elif datetime.now().weekday() == 6:
-    todaysDate = datetime.now() - timedelta(days=2)
-else:  # Otherwise set to today's date
-    todaysDate = datetime.now()
-
-offset = (datetime.now().weekday() - 1) % 7
-mtlDate = datetime.now() - timedelta(days=offset)
-mtlDate = f'{mtlDate:%B} {mtlDate.day}, {mtlDate.year}'  # Format date
-todaysDate = f'{todaysDate:%B} {todaysDate.day}, {todaysDate.year}'
 mainRef = "<ref name=\"auto6\"/>"
 
-# Figure out how better to do this later
 dates = []
 
 cases = []
@@ -57,7 +46,10 @@ totalDoses3rd = []
 totalDosesTotal = []
 
 
-# Helper function to compute the average of a list
+####################
+# Helper functions #
+####################
+
 def computeAverage(lst):
     return sum(lst) / len(lst)
 
@@ -94,50 +86,9 @@ def downloadCSV(url, fileName):
         print(f"Error: you currently have {fileName} open. Please close it and try running the program again.")
         exit()
 
-
-def readCSV(csv):
-    csv.readline()  # Skip first line
-
-    casesFlag = False
-    deathsFlag = False
-    hospitalizationsFlag = False
-
-    # Parse file
-    for x in csv:
-        line = re.split(',', x)
-        if (not line[0]) or (len(line) <= 1):
-            break
-
-        if (not casesFlag) and (line[0] == '2020-02-24'):
-            casesFlag = True
-
-        if (not deathsFlag) and (line[0] == '2020-03-15'):
-            deathsFlag = True
-
-        if (not hospitalizationsFlag) and (line[0] == '2020-04-10'):
-            hospitalizationsFlag = True
-
-        # Gather data and add to arrays
-        if casesFlag and (line[2] == "RSS99"):
-            dates.append(line[0])  # Add dates into array
-            newCases.append(int(line[11]))  # Add new cases into array
-            cases.append(int(line[6]))
-            activeCases.append(int(line[12]))
-        elif casesFlag and (line[2] == "RSS06"):
-            newCasesMTL.append(int(line[11]))  # Add new cases into array
-            casesMTL.append(int(line[6]))
-            activeCasesMTL.append(int(line[12]))
-
-        if hospitalizationsFlag and (line[2] == "RSS99") and line[44] != '.':
-            hospitalizations.append(int(line[44]))
-
-        if deathsFlag and (line[1] == 'Sexe') and (line[2] == 'TOT'):
-            dateDeaths.append(line[0])  # Add dates into array
-            deaths.append(line[25])  # Add deaths into array
-            deathsTotal.append(int(line[18]))
-        elif deathsFlag and (line[2] == "RSS06"):
-            deathsMTL.append(int(line[18]))
-
+######################
+# Montreal functions #
+######################
 
 def montreal():
     montrealGraphs()
@@ -220,15 +171,61 @@ def montrealInfobox():
     MTLFile.write(text)
     MTLFile.close()
 
+####################
+# Quebec functions #
+####################
 
 def quebec():
     downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/covid19-hist.csv', "covid19-hist.csv")
     quebecCasesCSV = open("covid19-hist.csv", "r")
 
-    readCSV(quebecCasesCSV)
+    readQuebecCSV(quebecCasesCSV)
 
     quebecGraphs(quebecCasesCSV)
     quebecInfobox(quebecCasesCSV)
+
+def readQuebecCSV(csv):
+    csv.readline()  # Skip first line
+
+    casesFlag = False
+    deathsFlag = False
+    hospitalizationsFlag = False
+
+    # Parse file
+    for x in csv:
+        line = re.split(',', x)
+        if (not line[0]) or (len(line) <= 1):
+            break
+
+        if (not casesFlag) and (line[0] == '2020-02-24'):
+            casesFlag = True
+
+        if (not deathsFlag) and (line[0] == '2020-03-15'):
+            deathsFlag = True
+
+        if (not hospitalizationsFlag) and (line[0] == '2020-04-10'):
+            hospitalizationsFlag = True
+
+        # Gather data and add to arrays
+        if casesFlag and (line[2] == "RSS99"):
+            dates.append(line[0])  # Add dates into array
+            newCases.append(int(line[11]))  # Add new cases into array
+            cases.append(int(line[6]))
+            activeCases.append(int(line[12]))
+        elif casesFlag and (line[2] == "RSS06"):
+            newCasesMTL.append(int(line[11]))  # Add new cases into array
+            casesMTL.append(int(line[6]))
+            activeCasesMTL.append(int(line[12]))
+
+        if hospitalizationsFlag and (line[2] == "RSS99") and line[44] != '.':
+            hospitalizations.append(int(line[44]))
+
+        if deathsFlag and (line[1] == 'Sexe') and (line[2] == 'TOT'):
+            dateDeaths.append(line[0])  # Add dates into array
+            deaths.append(line[25])  # Add deaths into array
+            deathsTotal.append(int(line[18]))
+        elif deathsFlag and (line[2] == "RSS06"):
+            deathsMTL.append(int(line[18]))
 
 
 def quebecGraphs(csv):
@@ -367,6 +364,9 @@ def quebecInfobox(csv):
     QCFile.write(text)
     QCFile.close()
 
+#########################
+# Vaccination functions #
+#########################
 
 def vaccination():
     downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv', "vaccination.csv")
