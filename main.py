@@ -3,47 +3,13 @@ import re
 from os import path
 import os
 from datetime import datetime
+import pandas as pd
 
 ####################
 # Global variables #
 ####################
 fileDir = os.path.dirname(os.path.realpath('__file__'))
 mainRef = "<ref name=\"auto6\"/>"
-
-dates = []
-
-cases = []
-casesMTL = []
-
-activeCases = []
-activeCasesMTL = []
-
-newCases = []
-newCasesMTL = []
-
-dateDeaths = []
-deaths = []
-deathsTotal = []
-deathsMTL = []
-
-hospitalizations = []
-
-percentage1st = []
-percentage1stMTL = []
-percentage2nd = []
-percentage2ndMTL = []
-
-dateVaccination = []
-
-dailyDoses1st = []
-dailyDoses2nd = []
-dailyDoses3rd = []
-dailyDosesTotal = []
-
-totalDoses1st = []
-totalDoses2nd = []
-totalDoses3rd = []
-totalDosesTotal = []
 
 
 ####################
@@ -67,6 +33,17 @@ def createAttribute(name, val):
     return attr
 
 
+def createColumn(name, index, date, region, varType):
+    attr = {
+        "name": name,
+        "index": index,
+        "date": date,
+        "region": region,
+        "type": varType
+    }
+    return attr
+
+
 def openFile(filePath):
     if path.exists(filePath):  # Check if path already exists
         fileName = open(filePath, "w", encoding='utf-8')
@@ -86,16 +63,20 @@ def downloadCSV(url, fileName):
         print(f"Error: you currently have {fileName} open. Please close it and try running the program again.")
         exit()
 
+
+def readCSVpandas(csv, skipRange):
+    df = pd.read_csv(csv, index_col=False, parse_dates=[0], skiprows=lambda x: x in skipRange, dtype='str')
+    return df
+
+
 ######################
 # Montreal functions #
 ######################
 
-def montreal():
-    montrealGraphs()
-    montrealInfobox()
+def montrealGraphs(data):
+    dates = data.loc[(data['Croisement'] == 'RSS06'), 'ï»¿Date']
+    newCases = data.loc[(data['Croisement'] == 'RSS06'), 'cas_quo_tot_n']
 
-
-def montrealGraphs():
     if not path.exists("Files_Montreal"):  # Check if folder exists. If not, create it
         os.makedirs("Files_Montreal")
 
@@ -121,10 +102,10 @@ def montrealGraphs():
     # Write to file
     montrealCases = open(MontrealNewCases, "a")
     for x in dates:
-        montrealCases.write(x + ",")
+        montrealCases.write(f"{x},")
 
     montrealCases.writelines(["\n|yAxisTitle=New Cases\n", "|y1="])
-    for x in newCasesMTL:
+    for x in newCases:
         montrealCases.write(f"{x},")
 
     montrealCases.writelines(["\n\n|y1Title=New cases per day\n",
@@ -135,34 +116,39 @@ def montrealGraphs():
     montrealCases.close()
 
 
-def montrealInfobox():
+def montrealInfobox(data, vaxData):
+    dates = data.loc[(data['Croisement'] == 'RSS06'), 'ï»¿Date']
+    casesMTL = data.loc[(data['Croisement'] == 'RSS06'), 'cas_cum_tot_n']
+    deathsMTL = data.loc[(data['Croisement'] == 'RSS06'), 'dec_cum_tot_n']
+
+    dateVaccination = vaxData.loc[(vaxData['Croisement'] == 'RSS06'), 'ï»¿Date']
+    percentage1stMTL = vaxData.loc[(vaxData['Croisement'] == 'RSS06'), 'cvac_cum_tot_1_p'].iloc[-1]
+    percentage2ndMTL = vaxData.loc[(vaxData['Croisement'] == 'RSS06'), 'cvac_cum_tot_2_p'].iloc[-1]
+
     MTLPathName = "infoboxes/MontrealInfobox.txt"
     MTLFile = openFile(MTLPathName)
 
     ref = "<ref name=\"auto6\">{{Cite web|url=https://www.inspq.qc.ca/covid-19/donnees|title=Données COVID-19 au Québec|website=INSPQ}}</ref>"
 
     efn = "{{efn|This figure may not represent the current epidemiological situation — the Quebec government " \
-          "restricted PCR COVID-19 tests to certain vulnerable groups on January 4, 2022.}} "
+          "restricted PCR COVID-19 tests to certain vulnerable groups on January 4, 2022.}}"
 
-    currentDate = datetime.strptime(dates[-1], '%Y-%m-%d')
-    currentDate = datetime.strftime(currentDate, '%B %d, %Y')
+    currentDate = datetime.strftime(dates.iloc[-1], '%B %d, %Y')
 
     date = createAttribute("date", currentDate)
-    confirmedCases = createAttribute("confirmed_cases", f'{casesMTL[-1]:,}{ref}')
-    activeCase = createAttribute("active_cases", f'{activeCasesMTL[-1]:,}{efn}{mainRef}')
-    death = createAttribute("deaths", f'{deathsMTL[-1]:,}{mainRef}')
+    confirmedCases = createAttribute("confirmed_cases", f'{int(casesMTL.iloc[-1]):,}{efn}{ref}')
+    death = createAttribute("deaths", f'{int(deathsMTL.iloc[-1]):,}{mainRef}')
     fatalityRate = createAttribute("fatality_rate",
-                                   "{{Percentage|" + str(deathsMTL[-1]) + "|" + str(casesMTL[-1]) + "|2}}")
+                                   "{{Percentage|" + deathsMTL.iloc[-1] + "|" + casesMTL.iloc[-1] + "|2}}")
 
-    currentDate = datetime.strptime(dateVaccination[-1], '%Y-%m-%d')
-    currentDate = datetime.strftime(currentDate, '%B %d, %Y')
+    currentDate = datetime.strftime(dateVaccination.iloc[-1], '%B %d, %Y')
     currentDate = smallDate(currentDate)
 
-    firstDose = f"\n*'''{float(percentage1stMTL[-1]):.1f}%''' vaccinated with at least one dose {currentDate}{mainRef}"
-    secondDose = f"\n*'''{float(percentage2ndMTL[-1]):.1f}%''' fully vaccinated {currentDate}{mainRef}"
+    firstDose = f"\n*'''{float(percentage1stMTL):.1f}%''' vaccinated with at least one dose {currentDate}{mainRef}"
+    secondDose = f"\n*'''{float(percentage2ndMTL):.1f}%''' fully vaccinated {currentDate}{mainRef}"
     vax = createAttribute("vaccinations", firstDose + secondDose)
 
-    infobox = [date, confirmedCases, activeCase, death, fatalityRate, vax]
+    infobox = [date, confirmedCases, death, fatalityRate, vax]
 
     text = ""
     for attribute in infobox:
@@ -171,65 +157,18 @@ def montrealInfobox():
     MTLFile.write(text)
     MTLFile.close()
 
+
 ####################
 # Quebec functions #
 ####################
 
-def quebec():
-    downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/covid19-hist.csv', "covid19-hist.csv")
-    quebecCasesCSV = open("covid19-hist.csv", "r")
-
-    readQuebecCSV(quebecCasesCSV)
-
-    quebecGraphs(quebecCasesCSV)
-    quebecInfobox(quebecCasesCSV)
-
-def readQuebecCSV(csv):
-    csv.readline()  # Skip first line
-
-    casesFlag = False
-    deathsFlag = False
-    hospitalizationsFlag = False
-
-    # Parse file
-    for x in csv:
-        line = re.split(',', x)
-        if (not line[0]) or (len(line) <= 1):
-            break
-
-        if (not casesFlag) and (line[0] == '2020-02-24'):
-            casesFlag = True
-
-        if (not deathsFlag) and (line[0] == '2020-03-15'):
-            deathsFlag = True
-
-        if (not hospitalizationsFlag) and (line[0] == '2020-04-10'):
-            hospitalizationsFlag = True
-
-        # Gather data and add to arrays
-        if casesFlag and (line[2] == "RSS99"):
-            dates.append(line[0])  # Add dates into array
-            newCases.append(int(line[11]))  # Add new cases into array
-            cases.append(int(line[6]))
-            activeCases.append(int(line[12]))
-        elif casesFlag and (line[2] == "RSS06"):
-            newCasesMTL.append(int(line[11]))  # Add new cases into array
-            casesMTL.append(int(line[6]))
-            activeCasesMTL.append(int(line[12]))
-
-        if hospitalizationsFlag and (line[2] == "RSS99") and line[44] != '.':
-            hospitalizations.append(int(line[44]))
-
-        if deathsFlag and (line[1] == 'Sexe') and (line[2] == 'TOT'):
-            dateDeaths.append(line[0])  # Add dates into array
-            deaths.append(line[25])  # Add deaths into array
-            deathsTotal.append(int(line[18]))
-        elif deathsFlag and (line[2] == "RSS06"):
-            deathsMTL.append(int(line[18]))
-
-
-def quebecGraphs(csv):
+def quebecGraphs(data):
     movingAverage = []
+
+    dates = data.loc[(data['Croisement'] == 'RSS99'), 'ï»¿Date']
+    newCases = data.loc[(data['Croisement'] == 'RSS99'), 'cas_quo_tot_n']
+    newCases = pd.to_numeric(newCases)
+    deaths = data.loc[(data['Croisement'] == 'RSS99'), 'dec_quo_tot_n']
 
     # File names
     QuebecNewCases = "Files_Quebec/QuebecNewCases.txt"
@@ -250,8 +189,7 @@ def quebecGraphs(csv):
     else:  # Create file if it doesn't exist
         quebecDeaths = open(QuebecNewDeaths, "x")
 
-    quebecCases.writelines(["=== Quebec new cases per day ===\n",
-                            "<div style=\"overflow-x:auto;>\n",
+    quebecCases.writelines(["<div style=\"overflow-x:auto;>\n",
                             "{{Graph:Chart\n",
                             "|width=950\n",
                             "|colors=#ffc1b5, #FF6347\n",
@@ -266,8 +204,7 @@ def quebecGraphs(csv):
                             "|xType = date\n",
                             "|x = "])
 
-    quebecDeaths.writelines(["=== Quebec new deaths per day ===\n",
-                             "<div style=\"overflow-x:auto;>\n",
+    quebecDeaths.writelines(["<div style=\"overflow-x:auto;>\n",
                              "{{Graph:Chart\n",
                              "| height = 180\n",
                              "| width = 950\n",
@@ -295,33 +232,39 @@ def quebecGraphs(csv):
     quebecCases = open(QuebecNewCases, "a")
 
     for x in dates:
-        quebecCases.write(x + ",")
+        quebecCases.write(f"{x:%Y-%m-%d},")
 
     quebecCases.writelines(["\n|y1Title=Daily new cases\n", "|y1="])
     for x in newCases:
-        quebecCases.write(str(x) + ",")
+        quebecCases.write(f"{x},")
 
     quebecCases.writelines(["\n|y2Title=7-day moving average\n", "|y2="])
     for x in movingAverage:
-        quebecCases.write(str(x) + ",")
+        quebecCases.write(f"{x},")
 
     quebecCases.writelines(["\n}}\n", "</div>"])
     quebecCases.close()
 
     quebecDeaths = open(QuebecNewDeaths, "a")
 
-    for x in dateDeaths:
-        quebecDeaths.write(x + ",")
+    for x in dates:
+        quebecDeaths.write(f"{x:%Y-%m-%d},")
 
     quebecDeaths.writelines(["\n|y1Title=Deaths\n", "|y1="])
     for x in deaths:
-        quebecDeaths.write(x + ",")
+        quebecDeaths.write(f"{x},")
 
     quebecDeaths.writelines(["\n}}\n", "</div>"])
     quebecDeaths.close()
 
 
-def quebecInfobox(csv):
+def quebecInfobox(data, vaxData):
+    dates = data.loc[(data['Croisement'] == 'RSS99'), 'ï»¿Date']
+    cases = data.loc[(data['Croisement'] == 'RSS99'), 'cas_cum_tot_n']
+    deathsTotal = data.loc[(data['Croisement'] == 'RSS99'), 'dec_cum_tot_n']
+    hospitalizations = data.loc[(data['Croisement'] == 'RSS99'), 'hos_act_tot_n']
+    percentage1st = vaxData.loc[(vaxData['Croisement'] == 'RSS99'), 'cvac_cum_tot_1_p']
+
     refs = ["<ref name=\"auto6\">{{Cite "
             "web|url=https://www.inspq.qc.ca/covid-19/donnees|title=Données "
             "COVID-19 au Québec|website=INSPQ}}</ref>",
@@ -341,21 +284,19 @@ def quebecInfobox(csv):
     efn = "{{efn|This figure may not represent the current epidemiological situation — the Quebec government " \
           "restricted PCR COVID-19 tests to certain vulnerable groups on January 4, 2022.}} "
 
-    currentDate = datetime.strptime(dates[-1], '%Y-%m-%d')
-    currentDate = datetime.strftime(currentDate, '%B %d, %Y')
+    currentDate = datetime.strftime(dates.iloc[-1], '%B %d, %Y')
 
     date = createAttribute("date", currentDate)
-    confirmedCases = createAttribute("confirmed_cases", f'{cases[-1]:,}{refs[0]}')
-    activeCase = createAttribute("active_cases", f'{activeCases[-1]:,}{efn}')
-    death = createAttribute("deaths", f'{deathsTotal[-1]:,}{refs[1]}')
+    confirmedCases = createAttribute("confirmed_cases", f'{int(cases.iloc[-1]):,}{efn}{refs[0]}')
+    death = createAttribute("deaths", f'{int(deathsTotal.iloc[-1]):,}{refs[1]}')
     fatalityRate = createAttribute("fatality_rate",
-                                   "{{Percentage|" + str(deathsTotal[-1]) + "|" + str(cases[-1]) + "|2}}")
-    hospitalization = createAttribute("hospitalized_cases", f'{hospitalizations[-1]:,}')
+                                   "{{Percentage|" + deathsTotal.iloc[-1] + "|" + cases.iloc[-1] + "|2}}")
+    hospitalization = createAttribute("hospitalized_cases", f'{int(hospitalizations.iloc[-1]):,}')
     vax = createAttribute("vaccinations",
-                          "\n*'''" + f'{float(percentage1st[-1]):.1f}' + "%'''   vaccinated with at least one dose " +
+                          "\n*'''" + f'{float(percentage1st.iloc[-1]):.1f}' + "%'''   vaccinated with at least one dose " +
                           refs[2])
 
-    infobox = [date, confirmedCases, activeCase, death, fatalityRate, hospitalization, vax]
+    infobox = [date, confirmedCases, death, fatalityRate, hospitalization, vax]
 
     text = ""
     for attribute in infobox:
@@ -364,21 +305,27 @@ def quebecInfobox(csv):
     QCFile.write(text)
     QCFile.close()
 
+
 #########################
 # Vaccination functions #
 #########################
 
-def vaccination():
-    downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv', "vaccination.csv")
-    vaccinationsCSV = open("vaccination.csv", "r")
+def vaccinationGraphs(data):
+    dateVaccination = data.loc[(data['Croisement'] == 'RSS99'), 'ï»¿Date']
 
-    vaccinationGraphs(vaccinationsCSV)
-    vaccinationInfobox()
-    vaccinationPiechart()
+    dailyDoses1st = data.loc[(data['Croisement'] == 'RSS99'), 'vac_quo_1_n']
+    dailyDoses2nd = data.loc[(data['Croisement'] == 'RSS99'), 'vac_quo_2_n']
+    dailyDoses3rd = data.loc[(data['Croisement'] == 'RSS99'), 'vac_quo_3_n']
+    dailyDoses4th = data.loc[(data['Croisement'] == 'RSS99'), 'vac_quo_4_n']
 
+    totalDoses1st = data.loc[(data['Croisement'] == 'RSS99'), 'vac_cum_1_n']
+    totalDoses2nd = data.loc[(data['Croisement'] == 'RSS99'), 'vac_cum_2_n']
+    totalDoses3rd = data.loc[(data['Croisement'] == 'RSS99'), 'vac_cum_3_n']
+    totalDoses4th = data.loc[(data['Croisement'] == 'RSS99'), 'vac_cum_4_n']
+    totalDosesTotal = data.loc[(data['Croisement'] == 'RSS99'), 'vac_cum_tot_n']
 
-def vaccinationGraphs(vaccinationsCSV):
-    vaccinationsCSV.readline()  # Skip first line
+    percentage1st = data.loc[(data['Croisement'] == 'RSS99'), 'cvac_cum_tot_1_p']
+    percentage2nd = data.loc[(data['Croisement'] == 'RSS99'), 'cvac_cum_tot_2_p']
 
     # File names
     DailyDoses = "Files_Vaccination/DailyDoses.txt"
@@ -416,11 +363,12 @@ def vaccinationGraphs(vaccinationsCSV):
                            "| xAxisFormat=%Y-%m\n",
                            "| yGrid= 1\n",
                            "| xGrid= 1\n",
-                           "| colors= #72B8B1, #3b94a8, #196165\n",
+                           "| colors= #72B8B1, #3b94a8, #196165, #043538\n",
                            "| legend=Legend\n",
                            "| y1Title=1st dose\n",
                            "| y2Title=2nd dose\n",
                            "| y3Title=3rd dose\n",
+                           "| y4Title=4th dose\n",
                            "| yAxisTitle = Number of doses\n",
                            "| x="
                            ])
@@ -435,12 +383,13 @@ def vaccinationGraphs(vaccinationsCSV):
                            "| xAxisFormat=%Y-%m\n",
                            "| yGrid= 1\n",
                            "| xGrid= 1\n",
-                           "| colors= #72B8B1, #3b94a8, #196165, #929292\n",
+                           "| colors= #72B8B1, #3b94a8, #196165, #043538,#929292\n",
                            "| legend=Legend\n",
                            "| y1Title=1st dose\n",
                            "| y2Title=2nd dose\n",
                            "| y3Title=3rd dose\n",
-                           "| y4Title= Total\n",
+                           "| y4Title=4th dose\n",
+                           "| y5Title= Total\n",
                            "| yAxisTitle = Cumulative number of doses\n",
                            "| x="
                            ])
@@ -454,57 +403,35 @@ def vaccinationGraphs(vaccinationsCSV):
                            "| xAxisFormat=%Y-%m\n",
                            "| yGrid= 1\n",
                            "| xGrid= 1\n",
-                           "| colors= #72B8B1, #196165, #0055ff\n",
+                           "| colors= #72B8B1, #196165\n",
                            "| legend=Legend\n",
                            "| y1Title=1st dose\n",
                            "| y2Title=2nd dose\n",
-                           #                     "| y3Title=3rd dose\n",
                            "| yAxisTitle =  Percentage of the population vaccinated (%)\n",
                            "| x="
                            ])
 
-    # Parse file
-    for x in vaccinationsCSV:
-        line = re.split(',', x)
-        if (not line[0]) or (len(line) <= 1):
-            break
-
-        # Gather data and add to arrays
-        if line[2] == 'RSS99':
-            dateVaccination.append(line[0])  # Add dates into array
-
-            dailyDoses1st.append(line[4])
-            dailyDoses2nd.append(line[5])
-            dailyDoses3rd.append(line[6])
-            dailyDosesTotal.append(line[12])
-
-            totalDoses1st.append(line[8])
-            totalDoses2nd.append(line[9])
-            totalDoses3rd.append(line[10])
-            totalDosesTotal.append(line[13])
-
-            percentage1st.append(line[14])
-            percentage2nd.append(line[15])
-        if line[2] == 'RSS06':
-            percentage1stMTL.append(line[14])
-            percentage2ndMTL.append(line[15])
-
     dailyDoses = open(DailyDoses, "a")
 
+    # TODO: for the love of god just make this a method
     for x in dateVaccination:
-        dailyDoses.write(x + ",")
+        dailyDoses.write(f"{x},")
 
     dailyDoses.writelines(["\n|y1="])
     for x in dailyDoses1st:
-        dailyDoses.write(str(x) + ",")
+        dailyDoses.write(f"{x},")
 
     dailyDoses.writelines(["\n|y2="])
     for x in dailyDoses2nd:
-        dailyDoses.write(str(x) + ",")
+        dailyDoses.write(f"{x},")
 
     dailyDoses.writelines(["\n|y3="])
     for x in dailyDoses3rd:
-        dailyDoses.write(str(x) + ",")
+        dailyDoses.write(f"{x},")
+
+    dailyDoses.writelines(["\n|y4="])
+    for x in dailyDoses4th:
+        dailyDoses.write(f"{x},")
 
     dailyDoses.writelines(["\n}}\n",
                            "<div style=\"font-size:80%; line-height:1.2em;\">",
@@ -516,23 +443,27 @@ def vaccinationGraphs(vaccinationsCSV):
     totalDoses = open(TotalDoses, "a")
 
     for x in dateVaccination:
-        totalDoses.write(x + ",")
+        totalDoses.write(f"{x},")
 
     totalDoses.writelines(["\n|y1="])
     for x in totalDoses1st:
-        totalDoses.write(str(x) + ",")
+        totalDoses.write(f"{x},")
 
     totalDoses.writelines(["\n|y2="])
     for x in totalDoses2nd:
-        totalDoses.write(str(x) + ",")
+        totalDoses.write(f"{x},")
 
     totalDoses.writelines(["\n|y3="])
     for x in totalDoses3rd:
-        totalDoses.write(str(x) + ",")
+        totalDoses.write(f"{x},")
 
     totalDoses.writelines(["\n|y4="])
+    for x in totalDoses4th:
+        totalDoses.write(f"{x},")
+
+    totalDoses.writelines(["\n|y5="])
     for x in totalDosesTotal:
-        totalDoses.write(str(x) + ",")
+        totalDoses.write(f"{x},")
 
     totalDoses.writelines(["\n}}\n",
                            "<div style=\"font-size:80%; line-height:1.2em;\">",
@@ -542,15 +473,15 @@ def vaccinationGraphs(vaccinationsCSV):
     percentage = open(PercentageVaccinated, "a")
 
     for x in dateVaccination:
-        percentage.write(x + ",")
+        percentage.write(f"{x},")
 
     percentage.writelines(["\n|y1="])
     for x in percentage1st:
-        percentage.write(str(x) + ",")
+        percentage.write(f"{x},")
 
     percentage.writelines(["\n|y2="])
     for x in percentage2nd:
-        percentage.write(str(x) + ",")
+        percentage.write(f"{x},")
 
     percentage.writelines(["\n}}\n",
                            "<div style=\"font-size:80%; line-height:1.2em;\">",
@@ -558,7 +489,12 @@ def vaccinationGraphs(vaccinationsCSV):
     percentage.close()
 
 
-def vaccinationInfobox():
+def vaccinationInfobox(data):
+    dateVaccination = data.loc[(data['Croisement'] == 'RSS99'), 'ï»¿Date']
+    totalDoses2nd = data.loc[(data['Croisement'] == 'RSS99'), 'vac_cum_2_n']
+    totalDosesTotal = data.loc[(data['Croisement'] == 'RSS99'), 'vac_cum_tot_n']
+    percentage1st = data.loc[(data['Croisement'] == 'RSS99'), 'cvac_cum_tot_1_p']
+
     refs = ["<ref name=\"inspqVacc\">{{cite web |title=Données de " \
             "vaccination contre la COVID-19 au Québec " \
             "|url=https://www.inspq.qc.ca/covid-19/donnees/vaccination |website=INSPQ " \
@@ -569,15 +505,14 @@ def vaccinationInfobox():
     vaxPathName = "infoboxes/vaccination.txt"
     vaxFile = openFile(vaxPathName)
 
-    currentDate = datetime.strptime(dateVaccination[-1], '%Y-%m-%d')
-    currentDate = datetime.strftime(currentDate, '%B %d, %Y')
+    currentDate = datetime.strftime(dateVaccination.iloc[-1], '%B %d, %Y')
     currentDate = smallDate(currentDate)
 
-    totalAdministered = f"'''{int(totalDosesTotal[-1]):,}''' doses administered {currentDate}{refs[0]}<br>"
-    total2Administered = f"'''{int(totalDoses2nd[-1]):,}''' second doses administered {currentDate}{refs[1]}"
+    totalAdministered = f"'''{int(totalDosesTotal.iloc[-1]):,}''' doses administered {currentDate}{refs[0]}<br>"
+    total2Administered = f"'''{int(totalDoses2nd.iloc[-1]):,}''' second doses administered {currentDate}{refs[1]}"
     participants = createAttribute("participants", totalAdministered + total2Administered)
 
-    outcome1 = f"'''{float(percentage1st[-1]):.1f}%''' of the population has received at least one dose of a vaccine {currentDate}{refs[1]}"
+    outcome1 = f"'''{float(percentage1st.iloc[-1]):.1f}%''' of the population has received at least one dose of a vaccine {currentDate}{refs[1]}"
     outcome = createAttribute("outcome", outcome1)
 
     infobox = [participants, outcome]
@@ -589,24 +524,26 @@ def vaccinationInfobox():
     vaxFile.write(text)
     vaxFile.close()
 
+    vaccinationPiechart(dateVaccination.iloc[-1], percentage1st.iloc[-1], totalDoses2nd.iloc[-1])
 
-def vaccinationPiechart():
+
+def vaccinationPiechart(dateVaccination, percentage1st, totalDoses2nd):
     quebecPopulation = 8585523  # Stats Can estimate Q2 2021
-    currentDate = datetime.strptime(dateVaccination[-1], '%Y-%m-%d')
-    currentDate = datetime.strftime(currentDate, '%B %d, %Y')
+
+    currentDate = datetime.strftime(dateVaccination, '%B %d, %Y')
 
     vaxPathName = "infoboxes/PiechartQuebecVaccination.txt"
     vaxFile = openFile(vaxPathName)
 
     # Calculations for piechart
 
-    unvaccinated = int(((100 - float(percentage1st[-1])) / 100) * quebecPopulation)
+    unvaccinated = int(((100 - float(percentage1st)) / 100) * quebecPopulation)
     unvaccinatedPercentage = round((unvaccinated / quebecPopulation) * 100, 1)
 
-    oneDose = int(((float(percentage1st[-1]) / 100) * quebecPopulation) - int(totalDoses2nd[-1]))
+    oneDose = int(((float(percentage1st) / 100) * quebecPopulation) - int(totalDoses2nd))
     oneDosePercentage = round((oneDose / quebecPopulation) * 100, 1)
 
-    secondDosePercentage = round(float(percentage1st[-1]) - oneDosePercentage, 1)
+    secondDosePercentage = round(float(percentage1st) - oneDosePercentage, 1)
 
     caption = createAttribute("caption", f"Total number of people receiving vaccinations in Quebec as of {currentDate}")
     ref = createAttribute("ref", "https://www.inspq.qc.ca/covid-19/donnees/vaccination")
@@ -616,12 +553,12 @@ def vaccinationPiechart():
     value1 = createAttribute("value1", unvaccinatedPercentage)
     color1 = createAttribute("color1", "#BFBFBF")
 
-    label2 = createAttribute("label2", f" Population who has received only one dose of a vaccine: {oneDose:,} people")
+    label2 = createAttribute("label2", f"Population who has received only one dose of a vaccine: {oneDose:,} people")
     value2 = createAttribute("value2", oneDosePercentage)
     color2 = createAttribute("color2", "#42f5da")
 
     label3 = createAttribute("label3",
-                             f" Population who has been fully vaccinated (both doses): {int(totalDoses2nd[-1]):,} people")
+                             f"Population who has been fully vaccinated (both doses): {int(totalDoses2nd):,} people")
     value3 = createAttribute("value3", secondDosePercentage)
     color3 = createAttribute("color3", "#008")
 
@@ -636,7 +573,19 @@ def vaccinationPiechart():
 
 
 if __name__ == "__main__":
-    # Generate all files
-    vaccination()
-    quebec()
-    montreal()
+    downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/covid19-hist.csv', "covid19-hist.csv")
+    quebecCasesCSV = open("covid19-hist.csv", "r")
+
+    downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv', "vaccination.csv")
+    vaccinationsCSV = open("vaccination.csv", "r")
+
+    mainData = readCSVpandas(quebecCasesCSV, range(1, 1429))
+    vData = readCSVpandas(vaccinationsCSV, range(0, 0))
+
+    quebecGraphs(mainData)
+    quebecInfobox(mainData, vData)
+
+    montrealGraphs(mainData)
+    montrealInfobox(mainData, vData)
+
+    vaccinationGraphs(vData)
