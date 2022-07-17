@@ -8,6 +8,7 @@ import pandas as pd
 ####################
 # Global variables #
 ####################
+
 fileDir = os.path.dirname(os.path.realpath('__file__'))
 
 # TODO: Use dictionaries for these
@@ -22,7 +23,6 @@ refs = ["<ref name=\"auto6\">{{Cite "
         "|access-date=2021-03-19|language=fr}}</ref>",
         "<ref name=\"inspqVacc\"/>"
         ]
-
 mainRef = refs[1]
 
 efn = "{{efn|This figure may not represent the current epidemiological situation — the Quebec government " \
@@ -40,8 +40,8 @@ MTL = 'RSS06'
 def computeAverage(lst):
     return sum(lst) / len(lst)
 
-def computeMovingAverage(data):
 
+def computeMovingAverage(data):
     # Calculate 7-day moving average
     i = 0
     j = 7
@@ -54,6 +54,7 @@ def computeMovingAverage(data):
             j += 1
 
     return movingAverage
+
 
 def smallDate(date):
     return "<small>(" + date + ")</small>"
@@ -84,7 +85,6 @@ def writeValues(graphFile, name, vals):
 
 
 def openFileForWriting(filePath):
-
     # Check if folder exists. If not, create it
     if not path.exists(os.path.dirname(filePath)):
         os.makedirs(os.path.dirname(filePath))
@@ -113,6 +113,9 @@ def readCSV(csv, skipRange):
     df = pd.read_csv(csv, index_col=False, parse_dates=[0], skiprows=lambda x: x in skipRange, dtype='str')
     return df
 
+########################
+# Generation functions #
+########################
 
 def generateGraphs(pathName, dates, y1Vals, y2Vals=None, y3Vals=None, y4Vals=None, y5Vals=None,
                    width=850, colors=None, showValues='offset:2', myType='line',
@@ -120,7 +123,6 @@ def generateGraphs(pathName, dates, y1Vals, y2Vals=None, y3Vals=None, y4Vals=Non
                    yAxisTitle=None, y1Title=None, y2Title=None, y3Title=None, y4Title=None, y5Title=None,
                    xGrid='', yGrid='',
                    legend=None, xType='date', yType=None):
-
     # Open file for writing
     graphFile = openFileForWriting(pathName)
 
@@ -209,6 +211,7 @@ def montreal(data, vaxData):
     generateGraphs("Files_Montreal/MontrealNewCases.txt", dates, newCases, colors="#FF6347",
                    yAxisTitle='New cases per day', y1Title='Cases')
 
+
 ####################
 # Quebec functions #
 ####################
@@ -248,10 +251,11 @@ def quebec(data, vaxData):
                           "\n*'''" + f'{float(percentage1st.iloc[-1]):.1f}' + "%'''   vaccinated with at least one dose " +
                           refs[2])
 
-    # Add all attributes to list
+    # Generate infobox
     attrs = [date, confirmedCases, death, fatalityRate, hospitalization, vax]
-
     generateInfobox("infoboxes/QuebecInfobox.txt", attrs)
+
+    # Generate graphs
     generateGraphs("Files_Quebec/QuebecNewCases.txt", dates, newCases, y2Vals=computeMovingAverage(newCases),
                    colors='#ffc1b5, #FF6347', yAxisTitle='No. of new cases',
                    y1Title='Daily new cases', y2Title='7-day moving average',
@@ -259,6 +263,7 @@ def quebec(data, vaxData):
     generateGraphs("Files_Quebec/QuebecNewDeaths.txt", dates, deaths,
                    colors='#FF6347', yAxisTitle='No. of new deaths',
                    y1Title='Daily new deaths', legend='Legend')
+
 
 #########################
 # Vaccination functions #
@@ -357,22 +362,26 @@ def vaccinationPiechart(dateVaccination, percentage1st, totalDoses2nd):
     value3 = createAttribute("value3", secondDosePercentage)
     color3 = createAttribute("color3", "#008")
 
+    # Write to file
     attrs = [caption, ref, label1, value1, color1, label2, value2, color2, label3, value3, color3]
-
     vaxFile.write(writeAttributes(attrs))
     vaxFile.close()
 
 
 if __name__ == "__main__":
+
+    # Get CSVs
     downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/covid19-hist.csv', "covid19-hist.csv")
     quebecCasesCSV = open("covid19-hist.csv", "r")
 
     downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv', "vaccination.csv")
     vaccinationsCSV = open("vaccination.csv", "r")
 
+    # Read CSVs
     mainData = readCSV(quebecCasesCSV, range(1, 1429))
     vData = readCSV(vaccinationsCSV, range(0, 0))
 
+    # Generate infoboxes and graphs for each article
     quebec(mainData, vData)
     montreal(mainData, vData)
     vaccination(vData)
