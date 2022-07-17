@@ -33,17 +33,6 @@ def createAttribute(name, val):
     return attr
 
 
-def createColumn(name, index, date, region, varType):
-    attr = {
-        "name": name,
-        "index": index,
-        "date": date,
-        "region": region,
-        "type": varType
-    }
-    return attr
-
-
 def openFile(filePath):
     if path.exists(filePath):  # Check if path already exists
         fileName = open(filePath, "w", encoding='utf-8')
@@ -89,8 +78,7 @@ def montrealGraphs(data):
     else:  # Create file if it doesn't exist
         montrealCases = open(MontrealNewCases, "x")
 
-    montrealCases.writelines(["=== Montreal region, new cases per day ===\n",
-                              "{{Graph:Chart\n",
+    montrealCases.writelines(["{{Graph:Chart\n",
                               "|width=850\n",
                               "|colors=#FF6347\n",
                               "|showValues= offset:2\n",
@@ -102,7 +90,7 @@ def montrealGraphs(data):
     # Write to file
     montrealCases = open(MontrealNewCases, "a")
     for x in dates:
-        montrealCases.write(f"{x},")
+        montrealCases.write(f"{x:%Y-%m-%d},")
 
     montrealCases.writelines(["\n|yAxisTitle=New Cases\n", "|y1="])
     for x in newCases:
@@ -152,7 +140,7 @@ def montrealInfobox(data, vaxData):
 
     text = ""
     for attribute in infobox:
-        text += f"| {attribute['name']}          = {attribute['value']}\n"
+        text += f"| {attribute['name']:<15} = {attribute['value']}\n"
 
     MTLFile.write(text)
     MTLFile.close()
@@ -300,7 +288,7 @@ def quebecInfobox(data, vaxData):
 
     text = ""
     for attribute in infobox:
-        text += f"| {attribute['name']}          = {attribute['value']}\n"
+        text += f"| {attribute['name']:<20} = {attribute['value']}\n"
 
     QCFile.write(text)
     QCFile.close()
@@ -413,9 +401,8 @@ def vaccinationGraphs(data):
 
     dailyDoses = open(DailyDoses, "a")
 
-    # TODO: for the love of god just make this a method
     for x in dateVaccination:
-        dailyDoses.write(f"{x},")
+        dailyDoses.write(f"{x:%Y-%m-%d},")
 
     dailyDoses.writelines(["\n|y1="])
     for x in dailyDoses1st:
@@ -443,7 +430,7 @@ def vaccinationGraphs(data):
     totalDoses = open(TotalDoses, "a")
 
     for x in dateVaccination:
-        totalDoses.write(f"{x},")
+        totalDoses.write(f"{x:%Y-%m-%d},")
 
     totalDoses.writelines(["\n|y1="])
     for x in totalDoses1st:
@@ -473,7 +460,7 @@ def vaccinationGraphs(data):
     percentage = open(PercentageVaccinated, "a")
 
     for x in dateVaccination:
-        percentage.write(f"{x},")
+        percentage.write(f"{x:%Y-%m-%d},")
 
     percentage.writelines(["\n|y1="])
     for x in percentage1st:
@@ -519,7 +506,7 @@ def vaccinationInfobox(data):
 
     text = ""
     for attribute in infobox:
-        text += f"| {attribute['name']}          = {attribute['value']}\n"
+        text += f"| {attribute['name']:<15} = {attribute['value']}\n"
 
     vaxFile.write(text)
     vaxFile.close()
@@ -538,12 +525,12 @@ def vaccinationPiechart(dateVaccination, percentage1st, totalDoses2nd):
     # Calculations for piechart
 
     unvaccinated = int(((100 - float(percentage1st)) / 100) * quebecPopulation)
-    unvaccinatedPercentage = round((unvaccinated / quebecPopulation) * 100, 1)
+    unvaccinatedPercentage = round((unvaccinated / quebecPopulation) * 100,1)
 
     oneDose = int(((float(percentage1st) / 100) * quebecPopulation) - int(totalDoses2nd))
-    oneDosePercentage = round((oneDose / quebecPopulation) * 100, 1)
+    oneDosePercentage = round((oneDose / quebecPopulation) * 100,1)
 
-    secondDosePercentage = round(float(percentage1st) - oneDosePercentage, 1)
+    secondDosePercentage = round(float(percentage1st) - oneDosePercentage)
 
     caption = createAttribute("caption", f"Total number of people receiving vaccinations in Quebec as of {currentDate}")
     ref = createAttribute("ref", "https://www.inspq.qc.ca/covid-19/donnees/vaccination")
@@ -566,7 +553,7 @@ def vaccinationPiechart(dateVaccination, percentage1st, totalDoses2nd):
 
     text = ""
     for attribute in infobox:
-        text += f"| {attribute['name']}              = {attribute['value']}\n"
+        text += f"| {attribute['name']:<10} = {attribute['value']}\n"
 
     vaxFile.write(text)
     vaxFile.close()
@@ -589,3 +576,4 @@ if __name__ == "__main__":
     montrealInfobox(mainData, vData)
 
     vaccinationGraphs(vData)
+    vaccinationInfobox(vData)
