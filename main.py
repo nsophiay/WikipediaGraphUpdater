@@ -1,5 +1,4 @@
 import requests
-import re
 from os import path
 import os
 from datetime import datetime
@@ -11,19 +10,16 @@ import pandas as pd
 
 fileDir = os.path.dirname(os.path.realpath('__file__'))
 
-# TODO: Use dictionaries for these
-refs = ["<ref name=\"auto6\">{{Cite "
-        "web|url=https://www.inspq.qc.ca/covid-19/donnees|title=Données "
-        "COVID-19 au Québec|website=INSPQ}}</ref>",
-        "<ref name=\"auto6\"/>",
-        "<ref name=\"inspqVacc\">{{cite web |title=Données de "
-        "vaccination contre la COVID-19 au Québec "
-        "|url=https://www.inspq.qc.ca/covid-19/donnees/vaccination "
-        "|website=INSPQ |publisher=Gouvernement "
-        "|access-date=2021-03-19|language=fr}}</ref>",
-        "<ref name=\"inspqVacc\"/>"
-        ]
-mainRef = refs[1]
+refs = {
+    "auto6-def": "<ref name=\"auto6\">{{Cite web|url=https://www.inspq.qc.ca/covid-19/donnees|title=Données COVID-19 "
+                 "au Québec|website=INSPQ}}</ref>",
+    "auto6": "<ref name=\"auto6\"/>",
+    "inspqVacc-def": "<ref name=\"inspqVacc\">{{cite web |title=Données de  vaccination contre la COVID-19 au Québec "
+                     "|url=https://www.inspq.qc.ca/covid-19/donnees/vaccination |website=INSPQ "
+                     "|publisher=Gouvernement |access-date=2021-03-19|language=fr}}</ref>",
+    "inspqVacc": "<ref name=\"inspqVacc\"/>"
+}
+mainRef = refs["auto6"]
 
 efn = "{{efn|This figure may not represent the current epidemiological situation — the Quebec government " \
       "restricted PCR COVID-19 tests to certain vulnerable groups on January 4, 2022.}}"
@@ -98,6 +94,7 @@ def openFileForWriting(filePath):
 
 
 def downloadCSV(url, fileName):
+    print(f"Downloading {fileName}...")
     try:
         # Download and save file
         r = requests.get(url, allow_redirects=True)
@@ -110,6 +107,7 @@ def downloadCSV(url, fileName):
 
 
 def readCSV(csv, skipRange):
+    print(f"Reading {csv.name}...")
     df = pd.read_csv(csv, index_col=False, parse_dates=[0], skiprows=lambda x: x in skipRange, dtype='str')
     return df
 
@@ -169,6 +167,8 @@ def generateInfobox(pathName, ls_attributes):
 
 def montreal(data, vaxData):
 
+    print("Generating files for Montreal...")
+
     ######################################
     # Get subsets of data from DataFrame #
     ######################################
@@ -181,7 +181,7 @@ def montreal(data, vaxData):
     # Cases
     newCases = data.loc[(data[REGION] == MTL), 'cas_quo_tot_n']
     casesMTL = data.loc[(data[REGION] == MTL), 'cas_cum_tot_n']
-    confirmedCases = createAttribute("confirmed_cases", f'{int(casesMTL.iloc[-1]):,}{efn}{refs[0]}')
+    confirmedCases = createAttribute("confirmed_cases", f'{int(casesMTL.iloc[-1]):,}{efn}{refs["auto6-def"]}')
 
     # Deaths
     deathsMTL = data.loc[(data[REGION] == MTL), 'dec_cum_tot_n']
@@ -218,6 +218,8 @@ def montreal(data, vaxData):
 
 def quebec(data, vaxData):
 
+    print("Generating files for Quebec...")
+
     ######################################
     # Get subsets of data from DataFrame #
     ######################################
@@ -232,12 +234,12 @@ def quebec(data, vaxData):
     newCases = pd.to_numeric(newCases)
 
     cases = data.loc[(data[REGION] == QC), 'cas_cum_tot_n']
-    confirmedCases = createAttribute("confirmed_cases", f'{int(cases.iloc[-1]):,}{efn}{refs[0]}')
+    confirmedCases = createAttribute("confirmed_cases", f'{int(cases.iloc[-1]):,}{efn}{refs["auto6-def"]}')
 
     # Deaths
     deaths = data.loc[(data[REGION] == QC), 'dec_quo_tot_n']
     deathsTotal = data.loc[(data[REGION] == QC), 'dec_cum_tot_n']
-    death = createAttribute("deaths", f'{int(deathsTotal.iloc[-1]):,}{refs[1]}')
+    death = createAttribute("deaths", f'{int(deathsTotal.iloc[-1]):,}{mainRef}')
     fatalityRate = createAttribute("fatality_rate",
                                    "{{Percentage|" + deathsTotal.iloc[-1] + "|" + cases.iloc[-1] + "|2}}")
 
@@ -249,7 +251,7 @@ def quebec(data, vaxData):
     percentage1st = vaxData.loc[(vaxData[REGION] == QC), 'cvac_cum_tot_1_p']
     vax = createAttribute("vaccinations",
                           "\n*'''" + f'{float(percentage1st.iloc[-1]):.1f}' + "%'''   vaccinated with at least one dose " +
-                          refs[2])
+                          refs["inspqVacc-def"])
 
     # Generate infobox
     attrs = [date, confirmedCases, death, fatalityRate, hospitalization, vax]
@@ -270,6 +272,8 @@ def quebec(data, vaxData):
 #########################
 
 def vaccination(data):
+
+    print("Generating files for vaccination...")
 
     ######################################
     # Get subsets of data from DataFrame #
@@ -293,14 +297,15 @@ def vaccination(data):
     totalDoses4th = data.loc[(data[REGION] == QC), 'vac_cum_4_n']
     totalDosesTotal = data.loc[(data[REGION] == QC), 'vac_cum_tot_n']
 
-    totalAdministered = f"'''{int(totalDosesTotal.iloc[-1]):,}''' doses administered {currentDate}{refs[2]}<br>"
-    total2Administered = f"'''{int(totalDoses2nd.iloc[-1]):,}''' second doses administered {currentDate}{refs[3]}"
+    totalAdministered = f"'''{int(totalDosesTotal.iloc[-1]):,}''' doses administered {currentDate}{refs['inspqVacc-def']}<br>"
+    total2Administered = f"'''{int(totalDoses2nd.iloc[-1]):,}''' second doses administered {currentDate}{refs['inspqVacc']}"
     participants = createAttribute("participants", totalAdministered + total2Administered)
 
     # Percentages
     percentage1st = data.loc[(data[REGION] == QC), 'cvac_cum_tot_1_p']
     percentage2nd = data.loc[(data[REGION] == QC), 'cvac_cum_tot_2_p']
-    outcome1 = f"'''{float(percentage1st.iloc[-1]):.1f}%''' of the population has received at least one dose of a vaccine {currentDate}{refs[3]}"
+    outcome1 = f"'''{float(percentage1st.iloc[-1]):.1f}%''' of the population has received at least one dose of a " \
+               f"vaccine {currentDate}{refs['inspqVacc']} "
     outcome = createAttribute("outcome", outcome1)
 
     # Generate infobox
@@ -385,3 +390,5 @@ if __name__ == "__main__":
     quebec(mainData, vData)
     montreal(mainData, vData)
     vaccination(vData)
+
+    print("\n---------------------\n- Program completed -\n---------------------")
