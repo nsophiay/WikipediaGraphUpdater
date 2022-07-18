@@ -405,6 +405,7 @@ def canada(data):
     casesYK = data.loc[(data[regionColumn] == 'Yukon'), 'avgcases_last7']
     casesNU = data.loc[(data[regionColumn] == 'Nunavut'), 'avgcases_last7']
 
+    # Generate graphs for each region
     generateGraphs("Files_Canada/WesternCanada.txt", dates, casesAB, y1Title="Alberta",
                    y2Vals=casesBC, y2Title="British Columbia",
                    y3Vals=casesSK, y3Title="Saskatchewan",
