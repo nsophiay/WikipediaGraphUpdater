@@ -106,9 +106,9 @@ def downloadCSV(url, fileName):
         exit()
 
 
-def readCSV(csv, skipRange):
+def readCSV(csv, dateColumn, skipRange):
     print(f"Reading {csv.name}...")
-    df = pd.read_csv(csv, index_col=False, parse_dates=[0], skiprows=lambda x: x in skipRange, dtype='str')
+    df = pd.read_csv(csv, index_col=False, parse_dates=[dateColumn], skiprows=lambda x: x in skipRange, dtype='str')
     return df
 
 ########################
@@ -119,7 +119,7 @@ def generateGraphs(pathName, dates, y1Vals, y2Vals=None, y3Vals=None, y4Vals=Non
                    width=850, colors=None, showValues='offset:2', myType='line',
                    xAxisTitle='Date', xAxisFormat='%B %Y', xAxisAngle='-40',
                    yAxisTitle=None, y1Title=None, y2Title=None, y3Title=None, y4Title=None, y5Title=None,
-                   xGrid='', yGrid='',
+                   xGrid='', yGrid='', linewidth=None,
                    legend=None, xType='date', yType=None):
     # Open file for writing
     graphFile = openFileForWriting(pathName)
@@ -135,7 +135,7 @@ def generateGraphs(pathName, dates, y1Vals, y2Vals=None, y3Vals=None, y4Vals=Non
              createAttribute("y3Title", y3Title), createAttribute("y4Title", y4Title),
              createAttribute("y5Title", y5Title), createAttribute("yType", yType),
              createAttribute("xGrid", xGrid), createAttribute("yGrid", yGrid),
-             createAttribute("legend", legend)]
+             createAttribute("legend", legend), createAttribute("linewidth", linewidth)]
 
     graphFile.write("{{Graph:Chart\n")
     graphFile.write(writeAttributes(attrs))
@@ -372,6 +372,68 @@ def vaccinationPiechart(dateVaccination, percentage1st, totalDoses2nd):
     vaxFile.write(writeAttributes(attrs))
     vaxFile.close()
 
+####################
+# Canada functions #
+####################
+
+def canada(data):
+
+    print("Generating files for Canada...")
+
+    regionColumn = 'prname'
+
+    dates = data.loc[(data[regionColumn] == 'Canada'), 'date']
+
+    # Western Canada
+    casesAB = data.loc[(data[regionColumn] == 'Alberta'), 'avgcases_last7']
+    casesMB = data.loc[(data[regionColumn] == 'Saskatchewan'), 'avgcases_last7']
+    casesSK = data.loc[(data[regionColumn] == 'Manitoba'), 'avgcases_last7']
+    casesBC = data.loc[(data[regionColumn] == 'British Columbia'), 'avgcases_last7']
+
+    # Central Canada
+    casesON = data.loc[(data[regionColumn] == 'Ontario'), 'avgcases_last7']
+    casesQC = data.loc[(data[regionColumn] == 'Quebec'), 'avgcases_last7']
+
+    # Atlantic Canada
+    casesNB = data.loc[(data[regionColumn] == 'New Brunswick'), 'avgcases_last7']
+    casesNS = data.loc[(data[regionColumn] == 'Nova Scotia'), 'avgcases_last7']
+    casesPEI = data.loc[(data[regionColumn] == 'Prince Edward Island'), 'avgcases_last7']
+    casesNL = data.loc[(data[regionColumn] == 'Newfoundland and Labrador'), 'avgcases_last7']
+
+    # Territories
+    casesNWT = data.loc[(data[regionColumn] == 'Northwest Territories'), 'avgcases_last7']
+    casesYK = data.loc[(data[regionColumn] == 'Yukon'), 'avgcases_last7']
+    casesNU = data.loc[(data[regionColumn] == 'Nunavut'), 'avgcases_last7']
+
+    generateGraphs("Files_Canada/WesternCanada.txt", dates, casesAB, y1Title="Alberta",
+                   y2Vals=casesBC, y2Title="British Columbia",
+                   y3Vals=casesSK, y3Title="Saskatchewan",
+                   y4Vals=casesMB, y4Title="Manitoba",
+                   colors="#1f77b4,#ff7f0e,#2ca02c,#ff9896", width=700,
+                   xAxisFormat="%m-%Y",
+                   linewidth=1, yAxisTitle="7-day daily case average")
+
+    generateGraphs("Files_Canada/CentralCanada.txt", dates, casesON, y1Title="Ontario",
+                   y2Vals=casesQC, y2Title="Quebec",
+                   colors="#1f77b4,#ff7f0e", width=700,
+                   xAxisFormat="%m-%Y",
+                   linewidth=1, yAxisTitle="7-day daily case average")
+
+    generateGraphs("Files_Canada/AtlanticCanada.txt", dates, casesNB, y1Title="New Brunswick",
+                   y2Vals=casesNS, y2Title="Nova Scotia",
+                   y3Vals=casesPEI, y3Title="Prince Edward Island",
+                   y4Vals=casesNL, y4Title="Newfoundland and Labrador",
+                   colors="#1f77b4,#ff7f0e,#2ca02c,#ff9896", width=700,
+                   xAxisFormat="%m-%Y",
+                   linewidth=1, yAxisTitle="7-day daily case average")
+
+    generateGraphs("Files_Canada/Territories.txt", dates, casesNWT, y1Title="Northwest Territories",
+                   y2Vals=casesYK, y2Title="Yukon",
+                   y3Vals=casesNU, y3Title="Nunavut",
+                   colors="#1f77b4,#ff7f0e,#2ca02c", width=700,
+                   xAxisFormat="%m-%Y",
+                   linewidth=1, yAxisTitle="7-day daily case average")
+
 
 if __name__ == "__main__":
 
@@ -382,13 +444,18 @@ if __name__ == "__main__":
     downloadCSV('https://www.inspq.qc.ca/sites/default/files/covid/donnees/vaccination.csv', "vaccination.csv")
     vaccinationsCSV = open("vaccination.csv", "r")
 
+    downloadCSV('https://health-infobase.canada.ca/src/data/covidLive/covid19-download.csv', "covid19-download.csv")
+    canadaCSV = open("covid19-download.csv", "r")
+
     # Read CSVs
-    mainData = readCSV(quebecCasesCSV, range(1, 1429))
-    vData = readCSV(vaccinationsCSV, range(0, 0))
+    mainData = readCSV(quebecCasesCSV, 0, range(1, 1429))
+    vData = readCSV(vaccinationsCSV, 0, range(0, 0))
+    cData = readCSV(canadaCSV, 3, range(0, 0))
 
     # Generate infoboxes and graphs for each article
     quebec(mainData, vData)
     montreal(mainData, vData)
     vaccination(vData)
+    canada(cData)
 
     print("\n---------------------\n- Program completed -\n---------------------")
