@@ -8,6 +8,11 @@ import pandas as pd
 # Global variables #
 ####################
 
+# Constants
+REGION = 'Croisement'
+QC = 'RSS99'
+MTL = 'RSS06'
+
 fileDir = os.path.dirname(os.path.realpath('__file__'))
 
 refs = {
@@ -23,11 +28,6 @@ mainRef = refs["auto6"]
 
 efn = "{{efn|This figure may not represent the current epidemiological situation — the Quebec government " \
       "restricted PCR COVID-19 tests to certain vulnerable groups on January 4, 2022.}}"
-
-REGION = 'Croisement'
-QC = 'RSS99'
-MTL = 'RSS06'
-
 
 ####################
 # Helper functions #
@@ -55,6 +55,9 @@ def computeMovingAverage(data):
 def smallDate(date):
     return "<small>(" + date + ")</small>"
 
+####################################
+# Functions relating to Attributes #
+####################################
 
 def createAttribute(name, val):
     attr = {
@@ -79,6 +82,9 @@ def writeValues(graphFile, name, vals):
         for x in vals:
             graphFile.write(f"{x},")
 
+##################################
+# Functions relating to file I/O #
+##################################
 
 def openFileForWriting(filePath):
     # Check if folder exists. If not, create it
