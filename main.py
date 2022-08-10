@@ -148,7 +148,7 @@ def generateGraphs(pathName, dates, y1Vals, y2Vals=None, y3Vals=None, y4Vals=Non
     # Write x and y values
     graphFile.write("|x = ")
     for x in dates:
-        graphFile.write(f"{x:%Y-%m-%d},")
+        graphFile.write(f"{x:%Y-%m-%#d},")
 
     writeValues(graphFile, "y1", y1Vals)
     writeValues(graphFile, "y2", y2Vals)
@@ -180,7 +180,7 @@ def montreal(data, vaxData):
 
     # Date
     dates = data.loc[(data[REGION] == MTL), 'ï»¿Date']
-    currentDate = datetime.strftime(dates.iloc[-1], '%B %d, %Y')
+    currentDate = datetime.strftime(dates.iloc[-1], '%B %#d, %Y')
     date = createAttribute("date", currentDate)
 
     # Cases
@@ -196,7 +196,7 @@ def montreal(data, vaxData):
 
     # Vaccination dates
     dateVaccination = vaxData.loc[(vaxData[REGION] == MTL), 'ï»¿Date']
-    currentDateVax = datetime.strftime(dateVaccination.iloc[-1], '%B %d, %Y')
+    currentDateVax = datetime.strftime(dateVaccination.iloc[-1], '%B %#d, %Y')
     currentDateVax = smallDate(currentDateVax)
 
     # Vaccination stats
@@ -231,7 +231,7 @@ def quebec(data, vaxData):
 
     # Date
     dates = data.loc[(data[REGION] == QC), 'ï»¿Date']
-    currentDate = datetime.strftime(dates.iloc[-1], '%B %d, %Y')
+    currentDate = datetime.strftime(dates.iloc[-1], '%B %#d, %Y')
     date = createAttribute("date", currentDate)
 
     # Cases
@@ -286,7 +286,7 @@ def vaccination(data):
 
     # Date
     dateVaccination = data.loc[(data[REGION] == QC), 'ï»¿Date']
-    currentDate = datetime.strftime(dateVaccination.iloc[-1], '%B %d, %Y')
+    currentDate = datetime.strftime(dateVaccination.iloc[-1], '%B %#d, %Y')
     currentDate = smallDate(currentDate)
 
     # Daily doses
@@ -352,7 +352,7 @@ def vaccinationPiechart(dateVaccination, percentage1st, totalDoses2nd):
 
     secondDosePercentage = round(float(percentage1st) - oneDosePercentage)
 
-    currentDate = datetime.strftime(dateVaccination, '%B %d, %Y')
+    currentDate = datetime.strftime(dateVaccination, '%B %#d, %Y')
 
     # Create attributes
     caption = createAttribute("caption", f"Total number of people receiving vaccinations in Quebec as of {currentDate}")
