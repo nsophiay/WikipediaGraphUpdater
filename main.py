@@ -12,6 +12,8 @@ import pandas as pd
 REGION = 'Croisement'
 QC = 'RSS99'
 MTL = 'RSS06'
+POPULATION = 8695659  # Stats Can estimate Q3 2022
+POPULATION_MTL = 2069849  # As of 2020
 
 fileDir = os.path.dirname(os.path.realpath('__file__'))
 
@@ -148,7 +150,7 @@ def generateGraphs(pathName, dates, y1Vals, y2Vals=None, y3Vals=None, y4Vals=Non
     # Write x and y values
     graphFile.write("|x = ")
     for x in dates:
-        graphFile.write(f"{x:%Y-%m-%#d},")
+        graphFile.write(f"{x:%Y-%m-%d},")
 
     writeValues(graphFile, "y1", y1Vals)
     writeValues(graphFile, "y2", y2Vals)
@@ -200,8 +202,10 @@ def montreal(data, vaxData):
     currentDateVax = smallDate(currentDateVax)
 
     # Vaccination stats
-    percentage1stMTL = vaxData.loc[(vaxData[REGION] == MTL), 'cvac_cum_tot_1_p'].iloc[-1]
-    percentage2ndMTL = vaxData.loc[(vaxData[REGION] == MTL), 'cvac_cum_tot_2_p'].iloc[-1]
+    percentage1stMTL = vaxData.loc[(vaxData[REGION] == MTL), 'vac_cum_1_n'].iloc[-1]
+    percentage1stMTL = (float(percentage1stMTL) / POPULATION_MTL) * 100
+    percentage2ndMTL = vaxData.loc[(vaxData[REGION] == MTL), 'vac_cum_2_n'].iloc[-1]
+    percentage2ndMTL = (float(percentage2ndMTL) / POPULATION_MTL) * 100
 
     firstDose = f"\n*'''{float(percentage1stMTL):.1f}%''' vaccinated with at least one dose {currentDateVax}{mainRef}"
     secondDose = f"\n*'''{float(percentage2ndMTL):.1f}%''' fully vaccinated {currentDateVax}{mainRef}"
@@ -253,9 +257,10 @@ def quebec(data, vaxData):
     hospitalization = createAttribute("hospitalized_cases", f'{int(hospitalizations.iloc[-1]):,}')
 
     # Vaccination
-    percentage1st = vaxData.loc[(vaxData[REGION] == QC), 'cvac_cum_tot_1_p']
+    percentage1st = vaxData.loc[(vaxData[REGION] == QC), 'vac_cum_1_n']
+    percentage1st = (float(percentage1st.iloc[-1])/POPULATION)*100
     vax = createAttribute("vaccinations",
-                          "\n*'''" + f'{float(percentage1st.iloc[-1]):.1f}' + "%'''   vaccinated with at least one dose " +
+                          "\n*'''" + f'{percentage1st:.1f}' + "%'''   vaccinated with at least one dose " +
                           refs["inspqVacc-def"])
 
     # Generate infobox
@@ -307,15 +312,15 @@ def vaccination(data):
     participants = createAttribute("participants", totalAdministered + total2Administered)
 
     # Percentages
-    percentage1st = data.loc[(data[REGION] == QC), 'cvac_cum_tot_1_p']
-    percentage2nd = data.loc[(data[REGION] == QC), 'cvac_cum_tot_2_p']
-    outcome1 = f"'''{float(percentage1st.iloc[-1]):.1f}%''' of the population has received at least one dose of a " \
+    percentage1st = [round((float(x)/POPULATION)*100,2) for x in totalDoses1st]
+    percentage2nd = [round((float(x)/POPULATION)*100,2) for x in totalDoses2nd]
+    outcome1 = f"'''{percentage1st[-1]:.1f}%''' of the population has received at least one dose of a " \
                f"vaccine {currentDate}{refs['inspqVacc']} "
     outcome = createAttribute("outcome", outcome1)
 
     # Generate infobox
     generateInfobox("infoboxes/vaccination.txt", [participants, outcome])
-    vaccinationPiechart(dateVaccination.iloc[-1], percentage1st.iloc[-1], totalDoses2nd.iloc[-1])
+    vaccinationPiechart(dateVaccination.iloc[-1], percentage1st[-1], percentage2nd[-1], totalDoses1st.iloc[-1], totalDoses2nd.iloc[-1])
 
     # Generate graphs
     generateGraphs("Files_Vaccination/DailyDoses.txt", dateVaccination, dailyDoses1st, y1Title='1st dose',
@@ -335,22 +340,18 @@ def vaccination(data):
                    )
 
 
-def vaccinationPiechart(dateVaccination, percentage1st, totalDoses2nd):
-
-    quebecPopulation = 8585523  # Stats Can estimate Q2 2021
+def vaccinationPiechart(dateVaccination, percentage1st, percentage2nd, totalDoses1st, totalDoses2nd):
 
     # Open file
     vaxPathName = "infoboxes/PiechartQuebecVaccination.txt"
     vaxFile = openFileForWriting(vaxPathName)
 
     # Calculations for piechart
-    unvaccinated = int(((100 - float(percentage1st)) / 100) * quebecPopulation)
-    unvaccinatedPercentage = round((unvaccinated / quebecPopulation) * 100, 1)
+    unvaccinated = int(((100 - float(percentage1st)) / 100) * POPULATION)
+    unvaccinatedPercentage = round((unvaccinated / POPULATION) * 100, 1)
 
-    oneDose = int(((float(percentage1st) / 100) * quebecPopulation) - int(totalDoses2nd))
-    oneDosePercentage = round((oneDose / quebecPopulation) * 100, 1)
-
-    secondDosePercentage = round(float(percentage1st) - oneDosePercentage)
+    oneDose = int(totalDoses1st) - int(totalDoses2nd)
+    oneDosePercentage = round(percentage1st - percentage2nd, 1)
 
     currentDate = datetime.strftime(dateVaccination, '%B %#d, %Y')
 
@@ -359,7 +360,7 @@ def vaccinationPiechart(dateVaccination, percentage1st, totalDoses2nd):
     ref = createAttribute("ref", "https://www.inspq.qc.ca/covid-19/donnees/vaccination")
 
     label1 = createAttribute("label1",
-                             f"Unvaccinated population: ~{unvaccinated:,} people <!-- Quebec population estimate as of Q2 2021: 8,585,523 -->")
+                             f"Unvaccinated population: ~{unvaccinated:,} people")
     value1 = createAttribute("value1", unvaccinatedPercentage)
     color1 = createAttribute("color1", "#BFBFBF")
 
@@ -369,7 +370,7 @@ def vaccinationPiechart(dateVaccination, percentage1st, totalDoses2nd):
 
     label3 = createAttribute("label3",
                              f"Population who has been fully vaccinated (both doses): {int(totalDoses2nd):,} people")
-    value3 = createAttribute("value3", secondDosePercentage)
+    value3 = createAttribute("value3", round(percentage2nd, 1))
     color3 = createAttribute("color3", "#008")
 
     # Write to file
