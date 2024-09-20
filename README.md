@@ -1,3 +1,5 @@
+## IMPORTANT NOTE: Program is deprecated because government no longer publishes much COVID data
+
 This Python program generates text files for the graphs on the following Wikipedia articles / ce programme Python génère des fichiers .txt pour les graphiques dans ces articles de Wikipedia:
 * EN
   * https://en.wikipedia.org/wiki/COVID-19_vaccination_in_Quebec
